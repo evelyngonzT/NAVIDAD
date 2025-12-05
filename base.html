@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <title>🎄 NAVIDAD: FINAL (SIN BUGS) 🎁</title>
+
+  <link rel="icon" type="image/png" href="./assets/favicon.png" />
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #001F3F;
+      cursor: grab;
+    }
+
+    body:active {
+      cursor: grabbing;
+    }
+
+    #hud {
+
+      position: fixed;
+
+      top: 10px;
+      left: 10px;
+
+      font-family: Arial, sans-serif;
+
+      color: white;
+
+      font-size: 20px;
+
+      text-shadow: 1px 1px 2px black;
+
+      z-index: 10;
+
+    }
+
+    #gameHud {
+
+      position: fixed;
+
+      top: 10px;
+
+      right: 10px;
+
+      font-family: Arial, sans-serif;
+
+      color: white;
+
+      font-size: 20px;
+
+      text-shadow: 1px 1px 2px black;
+
+      z-index: 10;
+
+      text-align: right;
+
+    }
+
+    #instruction {
+
+      position: fixed;
+
+      bottom: 20px;
+
+      width: 100%;
+
+      text-align: center;
+
+      color: rgba(255, 255, 255, 0.7);
+
+      font-family: Arial, sans-serif;
+
+      pointer-events: none;
+
+      user-select: none;
+
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <canvas id="mycanvas"></canvas>
+
+  <div id="hud">Velocidad: <span id="speed">0</span> km/h</div>
+
+  <div id="gameHud">🎁 Regalos: <span id="regalos">0</span> &nbsp; 💥 Piñatas: <span id="pinatas">0</span></div>
+
+  <div id="instruction">Clic y arrastrar para mover cámara • Flechas para conducir</div>
+
+
+
+  <audio id="bgMusic" src="audio/navidad.mp3" preload="auto" loop></audio>
+
+  <audio id="soundRegalo" src="audio/regalito.mp3" preload="auto"></audio>
+
+
+  const scene = new THREE.Scene();
+
+
+
+  // === CÁMARA ===
+
+  const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1500);
+
+  scene.add(camera);
+
+
+
+  // === LUCES ===
+
+  const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+
+  sun.position.set(100, 200, 100);
+
+  sun.castShadow = true;
+
+  sun.shadow.mapSize.width = 2048;
+
+  sun.shadow.mapSize.height = 2048;
+
+  scene.add(sun, new THREE.AmbientLight(0xffffff, 0.6));
+
+
+
+  // === FÍSICA ===
+
+  const world = new CANNON.World({
+
+  gravity: new CANNON.Vec3(0, -9.82, 0)
+
+  });
+
+  world.broadphase = new CANNON.SAPBroadphase(world);
+
+  world.defaultContactMaterial.restitution = 0.0;
+
+
+
+  // Suelo físico
+
+  const groundBody = new CANNON.Body({ type: CANNON.Body.STATIC });
+
+  const groundShape = new CANNON.Plane();
+
+  groundBody.addShape(groundShape);
+
+  groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+
+  world.addBody(groundBody);
+
+
+
+  // === SUELO VISUAL ===
+
+  const groundMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+
+  const groundMesh = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), groundMat);
+
+  groundMesh.rotation.x = -Math.PI / 2;
+
+  groundMesh.position.y = -0.2;
+
+  groundMesh.receiveShadow = true;
+
+  scene.add(groundMesh);
+
+
+
+  // === CALLES ===
+
+  const roadMat = new THREE.MeshLambertMaterial({ color: 0x2e2e2e });
+
+  const blockSize = 120;
+
+  const roadWidth = 16;
+
+  for (let i = -4; i <= 4; i++) { const horiz=new THREE.Mesh(new THREE.BoxGeometry(2000, 0.1, roadWidth), roadMat);
+    horiz.position.z=i * blockSize; horiz.position.y=0; horiz.receiveShadow=true; scene.add(horiz); const vert=new
+    THREE.Mesh(new THREE.BoxGeometry(roadWidth, 0.1, 2000), roadMat); vert.position.x=i * blockSize; vert.position.y=0;
+    vert.receiveShadow=true; scene.add(vert); } // MATERIALES MUÑECO var materialNieve=new THREE.MeshLambertMaterial({
+    color: 0xffffff }); var materialNegro=new THREE.MeshLambertMaterial({ color: 0x000000 }); var materialNaranja=new
+    THREE.MeshLambertMaterial({ color: 0xFFA500 }); var materialRojo=new THREE.MeshLambertMaterial({ color: 0xFF0000 });
+    var materialRama=new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // MUÑECO DE NIEVE BASE var snowMan=new
+    THREE.Group(); var geometriaCuerpo=new THREE.SphereGeometry(4, 16, 16); var mallaCuerpo=new
+    THREE.Mesh(geometriaCuerpo, materialNieve); mallaCuerpo.position.set(0, 4, 0); snowMan.add(mallaCuerpo); var
+    geometriaPecho=new THREE.SphereGeometry(3, 16, 16); var mallaPecho=new THREE.Mesh(geometriaPecho, materialNieve);
+    mallaPecho.position.set(0, 11, 0); snowMan.add(mallaPecho); var geometriaCabeza=new THREE.SphereGeometry(2, 16, 16);
+    var mallaCabeza=new THREE.Mesh(geometriaCabeza, materialNieve); mallaCabeza.position.set(0, 16, 0);
+    snowMan.add(mallaCabeza); // Detalles var geometriaOjo=new THREE.SphereGeometry(0.2, 8, 8); var ojoIzquierdo=new
+    THREE.Mesh(geometriaOjo, materialNegro); ojoIzquierdo.position.set(-0.8, 17, 1.8); snowMan.add(ojoIzquierdo); var
+    ojoDerecho=new THREE.Mesh(geometriaOjo, materialNegro); ojoDerecho.position.set(0.8, 17, 1.8);
+    snowMan.add(ojoDerecho); var geometriaNariz=new THREE.ConeGeometry(0.5, 2, 8); var mallaNariz=new
+    THREE.Mesh(geometriaNariz, materialNaranja); mallaNariz.rotation.x=THREE.MathUtils.degToRad(90);
+    mallaNariz.position.set(0, 16.5, 2.5); snowMan.add(mallaNariz); var geometriaBoton=new THREE.SphereGeometry(0.3, 8,
+    8); var boton1=new THREE.Mesh(geometriaBoton, materialNegro); boton1.position.set(0, 12.5, 2.8);
+    snowMan.add(boton1); var boton2=new THREE.Mesh(geometriaBoton, materialNegro); boton2.position.set(0, 11, 3);
+    snowMan.add(boton2); var boton3=new THREE.Mesh(geometriaBoton, materialNegro); boton3.position.set(0, 9.5, 2.8);
+    snowMan.add(boton3); var geometriaBaseSombrero=new THREE.CylinderGeometry(2.5, 2.5, 0.5, 16); var baseSombrero=new
+    THREE.Mesh(geometriaBaseSombrero, materialNegro); baseSombrero.position.set(0, 18, 0); snowMan.add(baseSombrero);
+    var geometriaCopaSombrero=new THREE.CylinderGeometry(1.5, 1.5, 3, 16); var copaSombrero=new
+    THREE.Mesh(geometriaCopaSombrero, materialNegro); copaSombrero.position.set(0, 19.75, 0); snowMan.add(copaSombrero);
+    var geometriaBufanda=new THREE.CylinderGeometry(2.2, 2.2, 1, 16); var bufanda=new THREE.Mesh(geometriaBufanda,
+    materialRojo); bufanda.position.set(0, 13.5, 0); snowMan.add(bufanda); var geometriaColaBufanda=new
+    THREE.BoxGeometry(0.5, 3, 0.1); var colaBufanda=new THREE.Mesh(geometriaColaBufanda, materialRojo);
+    colaBufanda.rotation.y=THREE.MathUtils.degToRad(15); colaBufanda.position.set(2, 12, 0); snowMan.add(colaBufanda);
+    var geometriaBrazo=new THREE.CylinderGeometry(0.2, 0.2, 5, 8); var brazoIzquierdo=new THREE.Mesh(geometriaBrazo,
+    materialRama); brazoIzquierdo.rotation.z=THREE.MathUtils.degToRad(45); brazoIzquierdo.position.set(-4, 11, 0);
+    snowMan.add(brazoIzquierdo); var brazoDerecho=new THREE.Mesh(geometriaBrazo, materialRama);
+    brazoDerecho.rotation.z=THREE.MathUtils.degToRad(-45); brazoDerecho.position.set(4, 11, 0);
+    snowMan.add(brazoDerecho); const entradasDeEdificios=[ { x: 15, y: 0, z: -25 }, { x: -30, y: 0, z: 10 }, { x: 5, y:
+    0, z: 40 } ]; entradasDeEdificios.forEach(posicion=> {
+
+    const snowManEntrada = snowMan.clone();
+
+    snowManEntrada.position.set(posicion.x, posicion.y, posicion.z);
+
+    scene.add(snowManEntrada);
+
+    });
+
+
+
+    // LISTAS
+
+    const buildingColors = [0xc0392b, 0x27ae60, 0xf0f0f0, 0xffd700, 0x8b0000];
+
+    const listaRegalos = [];
+
+    const listaPinatas = [];
+
+    const listaEdificios = [];
+
+
+
+    function crearEdificioNavideno(w, h, d, baseColor) {
+
+    const edificio = new THREE.Group();
+
+    const matPrincipal = new THREE.MeshPhongMaterial({ color: baseColor, specular: 0x555555, shininess: 10 });
+
+    const matNieve = new THREE.MeshPhongMaterial({ color: 0xf0f8ff, specular: 0x555555, shininess: 10 });
+
+    const matVentanaLuz = new THREE.MeshBasicMaterial({ color: 0xffa500 });
+
+    const matPuerta = new THREE.MeshLambertMaterial({ color: 0x3d3d3d });
+
+
+
+    const cuerpo = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), matPrincipal);
+
+    cuerpo.position.y = h / 2;
+
+    cuerpo.castShadow = true;
+
+    cuerpo.receiveShadow = true;
+
+    edificio.add(cuerpo);
+
+
+
+    const snowThickness = 1.5;
+
+    const techoNieve = new THREE.Mesh(new THREE.BoxGeometry(w * 1.05, snowThickness, d * 1.05), matNieve);
+
+    techoNieve.position.y = h + snowThickness / 2;
+
+    techoNieve.castShadow = true;
+
+    techoNieve.receiveShadow = true;
+
+    edificio.add(techoNieve);
+
+
+
+    const doorWidth = w * 0.15;
+
+    const doorHeight = Math.min(6, h / 3);
+
+    const doorDepth = 0.2;
+
+    const puerta = new THREE.Mesh(new THREE.BoxGeometry(doorWidth, doorHeight, doorDepth), matPuerta);
+
+    puerta.position.set(0, doorHeight / 2, d / 2 + doorDepth / 2);
+
+    edificio.add(puerta);
+
+
+
+    const windowDepth = 0.5;
+
+    const windowSize = 4;
+
+    const crearVentana = (x, y, z) => {
+
+    const ventana = new THREE.Mesh(new THREE.BoxGeometry(windowSize, windowSize, windowDepth), matVentanaLuz);
+
+    ventana.position.set(x, y, z);
+
+    return ventana;
+
+    };
+
+    const numFloors = Math.floor(h / 15);
+
+    const windowOffset = w / 4;
+
+    for (let floor = 1; floor < numFloors; floor++) { const floorY=(floor * 15) - (15 / 2);
+      edificio.add(crearVentana(-windowOffset, floorY, d / 2 + windowDepth / 2));
+      edificio.add(crearVentana(windowOffset, floorY, d / 2 + windowDepth / 2)); } edificio.rotation.y=Math.random() *
+      Math.PI * 2; return edificio; } //===GENERACIÓN DE EDIFICIOS===for (let gx=-4; gx < 4; gx++) { for (let gz=-4; gz
+      < 4; gz++) { const baseX=gx * blockSize + blockSize / 2; const baseZ=gz * blockSize + blockSize / 2; const
+      margin=roadWidth + 20; const areaSize=blockSize - margin * 2; const count=2 + Math.floor(Math.random() * 4); for
+      (let i=0; i < count; i++) { const w=20 + Math.random() * 20; const h=30 + Math.random() * 60; const d=20 +
+      Math.random() * 20; const color=buildingColors[Math.floor(Math.random() * buildingColors.length)]; const
+      mesh=crearEdificioNavideno(w, h, d, color); const offsetX=(Math.random() - 0.5) * areaSize; const
+      offsetZ=(Math.random() - 0.5) * areaSize; mesh.position.set(baseX + offsetX, 0, baseZ + offsetZ); scene.add(mesh);
+      const box=new THREE.Box3().setFromObject(mesh); mesh.userData.box=box; listaEdificios.push(mesh); } } }
+      //===ÁRBOLES===const trunkMat=new THREE.MeshLambertMaterial({ color: 0x8B4513 }); const leafMat=new
+      THREE.MeshLambertMaterial({ color: 0x006400 }); function crearArbolDetallado() { const tree=new THREE.Group();
+      const trunkHeight=6; const trunkRadius=0.8; const trunk=new THREE.Mesh(new THREE.CylinderGeometry(trunkRadius,
+      trunkRadius, trunkHeight, 6), trunkMat); trunk.position.y=trunkHeight / 2; trunk.castShadow=true; tree.add(trunk);
+      const coneHeight=5; const coneRadiusBase=4; const trunkTopY=trunkHeight; const leavesBottom=new THREE.Mesh(new
+      THREE.ConeGeometry(coneRadiusBase, coneHeight, 7, 1), leafMat); leavesBottom.position.y=trunkTopY + coneHeight *
+      0.4; leavesBottom.castShadow=true; tree.add(leavesBottom); const leavesMiddle=new THREE.Mesh(new
+      THREE.ConeGeometry(coneRadiusBase * 0.8, coneHeight * 0.8, 7, 1), leafMat);
+      leavesMiddle.position.y=leavesBottom.position.y + coneHeight * 0.7; leavesMiddle.castShadow=true;
+      tree.add(leavesMiddle); const leavesTop=new THREE.Mesh(new THREE.ConeGeometry(coneRadiusBase * 0.5, coneHeight *
+      0.7, 7, 1), leafMat); leavesTop.position.y=leavesMiddle.position.y + coneHeight * 0.6; leavesTop.castShadow=true;
+      tree.add(leavesTop); return tree; } for (let i=0; i < 70; i++) { const tree=crearArbolDetallado(); const
+      posX=Math.random() * 1600 - 800; const posZ=Math.random() * 1600 - 800; if (Math.abs(posX % blockSize)> roadWidth
+      && Math.abs(posZ % blockSize) > roadWidth) {
+
+      tree.position.set(posX, 0, posZ);
+
+      const scale = 0.7 + Math.random() * 0.6;
+
+      tree.scale.set(scale, scale, scale);
+
+      scene.add(tree);
+
+      }
+
+      }
+
+
+
+      // === SEMÁFOROS ===
+
+      const poleMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+
+      const lightColors = [0xff0000, 0xffff00, 0x00ff00];
+
+      for (let i = -4; i <= 4; i++) { for (let j=-4; j <=4; j++) { const pole=new THREE.Mesh(new if (e.button===0) {
+        isMouseDown=true; lastMouseX=e.clientX; lastMouseY=e.clientY; } }); window.addEventListener("mouseup", ()=> {
+        isMouseDown = false; });
+
+        window.addEventListener("mousemove", (e) => {
+
+        if (!isMouseDown) return;
+
+        const dx = e.clientX - lastMouseX;
+
+        const dy = e.clientY - lastMouseY;
+
+        camYaw -= dx * 0.005;
+
+        camPitch += dy * 0.005;
+
+        camPitch = Math.max(0.1, Math.min(Math.PI / 2 - 0.01, camPitch));
+
+        lastMouseX = e.clientX;
+
+        lastMouseY = e.clientY;
+
+        });
+
+
+
+        function updateCamera() {
+
+        const yOffset = Math.sin(camPitch) * camDist;
+
+        const groundProj = Math.cos(camPitch) * camDist;
+
+        const xOffset = Math.sin(camYaw) * groundProj;
+
+        const zOffset = Math.cos(camYaw) * groundProj;
+
+        const targetPos = new THREE.Vector3(
+
+        carMesh.position.x + xOffset,
+
+        carMesh.position.y + yOffset,
+
+        carMesh.position.z + zOffset
+
+        );
+
+        camera.position.lerp(targetPos, 0.12);
+
+        camera.lookAt(carMesh.position);
+
+        }
+
+
+
+        const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+
+        window.addEventListener("keydown", (e) => { if (keys[e.code] !== undefined) keys[e.code] = true; });
+
+        window.addEventListener("keyup", (e) => { if (keys[e.code] !== undefined) keys[e.code] = false; });
+
+
+
+        // UTILIDADES JUEGO
+
+        function noSeTraslapa(x, z, radius, listaExistente) {
+
+        for (const obj of listaExistente) {
+
+        if (!obj || !obj.position) continue;
+
+        const dx = obj.position.x - x; const dz = obj.position.z - z;
+
+        const minDist = (obj.userData?.radius || 3.5) + radius + 6;
+
+        if (dx * dx + dz * dz < minDist * minDist) return false; } return true; } function cercaDeEdificio(x, z,
+          minDistance=6) { for (const edificio of listaEdificios) { if (!edificio.userData.box) continue; const
+          box=edificio.userData.box; if (x>= box.min.x - minDistance && x <= box.max.x + minDistance && z>= box.min.z -
+            minDistance && z <= box.max.z + minDistance) { return true; } } return false; } // 150 REGALOS Y 150 PIÑATAS
+              EN TODO EL PLANO function posicionValida(radius, listaExistente, minDistanceFromCar=40) { const
+              cx=carMesh.position.x; const cz=carMesh.position.z; for (let attempts=0; attempts < 500; attempts++) {
+              const angle=Math.random() * Math.PI * 2; const dist=minDistanceFromCar + Math.random() * 750; const x=cx +
+              Math.cos(angle) * dist; const z=cz + Math.sin(angle) * dist; if (Math.abs(x)> 780 || Math.abs(z) > 780)
+              continue;
+
+              if (cercaDeEdificio(x, z, radius + 3)) continue;
+
+              if (!noSeTraslapa(x, z, radius, listaExistente)) continue;
+
+              return { x, z };
+
+              }
+
+              return null;
+
+              }
+
+
+
+              function spawnObjetosIniciales() {
+
+              for (let i = 0; i < 150; i++) { const choice=[regalo1, regalo2, regalo3][Math.floor(Math.random() * 3)];
+                const r=choice({ x: 0, y: 0, z: 0 }); r.scale.set(0.95, 0.95, 0.95); r.position.y=0.5; r.userData={
+                gameType: "regalo" , radius: 3.5, collected: false }; // OPTIMIZACIÓN: Desactivar sombras
+                r.castShadow=false; r.receiveShadow=false; const pos=posicionValida(r.userData.radius,
+                listaRegalos.concat(listaPinatas), 25); if (pos) { r.position.set(pos.x, 0.5, pos.z);
+                r.userData.initialX=pos.x; } scene.add(r); listaRegalos.push(r); } for (let i=0; i < 150; i++) { const
+                p=pinata({ x: 0, y: 0, z: 0 }); p.scale.set(0.4, 0.4, 0.4); p.position.y=8; p.userData={
+                gameType: "pinata" , radius: 4.5, collected: false }; // OPTIMIZACIÓN: Desactivar sombras
+                p.castShadow=false; p.receiveShadow=false; const pos=posicionValida(p.userData.radius,
+                listaRegalos.concat(listaPinatas), 25); if (pos) { p.position.set(pos.x, 6, pos.z);
+                p.userData.initialX=pos.x; } scene.add(p); listaPinatas.push(p); } } spawnObjetosIniciales();
+                carMesh.position.set(carBody.position.x, carBody.position.y, carBody.position.z);
+                carMesh.quaternion.set(carBody.quaternion.x, carBody.quaternion.y, carBody.quaternion.z,
+                carBody.quaternion.w); const speedEl=document.getElementById("speed"); const
+                regalosEl=document.getElementById("regalos"); const pinatasEl=document.getElementById("pinatas"); let
+                regalosRecogidos=0; let pinatasGolpeadas=0; function actualizarHUD() {
+                regalosEl.textContent=regalosRecogidos; pinatasEl.textContent=pinatasGolpeadas; } const
+                sonidoRegalo=document.getElementById("soundRegalo"); const
+                sonidoPinata=document.getElementById("soundPinata"); const bgMusic=document.getElementById("bgMusic");
+                function activarMusica() { if (bgMusic && bgMusic.paused) { bgMusic.volume=0.6;
+                bgMusic.play().catch(()=> { }); } }
+
+                window.addEventListener('mousemove', activarMusica, { once: true });
+
+                window.addEventListener('keydown', activarMusica, { once: true });
+
+
+
+                function chequeaColisionesConObjetos() {
+
+                const carPos = new THREE.Vector3(carMesh.position.x, carMesh.position.y, carMesh.position.z);
+
+                for (let i = listaRegalos.length - 1; i >= 0; i--) {
+
+                const obj = listaRegalos[i]; if (!obj || obj.userData.collected) continue;
+
+                const dx = obj.position.x - carPos.x; const dz = obj.position.z - carPos.z;
+
+                const dist = Math.hypot(dx, dz);
+
+                if (dist < (obj.userData.radius || 3.5) + 2.5) { obj.userData.collected=true; if (sonidoRegalo) { try {
+                  sonidoRegalo.currentTime=0; sonidoRegalo.play(); } catch (e) { } } regalosRecogidos +=1;
+                  actualizarHUD(); if (regalosRecogidos>= 10) { window.location.href = "ganar.html"; return; }
+
+                  const nueva = posicionValida(obj.userData.radius, listaRegalos.concat(listaPinatas), 25);
+
+                  if (nueva) {
+
+                  obj.position.set(nueva.x, 0.5, nueva.z);
+
+                  obj.userData.initialX = nueva.x; // Actualizar origen
+
+                  }
+
+                  obj.userData.collected = false;
+
+                  }
+
+                  }
+
+                  for (let i = listaPinatas.length - 1; i >= 0; i--) {
+
+                  const obj = listaPinatas[i]; if (!obj || obj.userData.collected) continue;
+
+                  const dx = obj.position.x - carPos.x; const dz = obj.position.z - carPos.z;
+
+                  const dist = Math.hypot(dx, dz);
+
+                  if (dist < (obj.userData.radius || 4.5) + 2.5) { obj.userData.collected=true; if (sonidoPinata) { try
+                    { sonidoPinata.currentTime=0; sonidoPinata.play(); } catch (e) { } } pinatasGolpeadas +=1;
+                    actualizarHUD(); if (pinatasGolpeadas>= 5) { window.location.href = "perder.html"; return; }
+
+                    const nueva = posicionValida(obj.userData.radius, listaRegalos.concat(listaPinatas), 25);
+
+                    if (nueva) {
+
+                    obj.position.set(nueva.x, 6, nueva.z);
+
+                    obj.userData.initialX = nueva.x; // Actualizar origen
+
+                    }
+
+                    obj.userData.collected = false;
+
+                    }
+
+                    }
+
+                    }
+
+
+
+                    // === LÓGICA DE REBOTE SUAVE (OPTIMIZADA: DISTANCIA) ===
+
+                    function calculateOverlap(carrobox, obstacleBox, axis) {
+
+                    let overlap = 0;
+
+                    if (axis === 'x') {
+
+                    overlap = Math.min(carrobox.max.x - obstacleBox.min.x, obstacleBox.max.x - carrobox.min.x);
+
+                    } else if (axis === 'y') {
+
+                    overlap = Math.min(carrobox.max.y - obstacleBox.min.y, obstacleBox.max.y - carrobox.min.y);
+
+                    } else if (axis === 'z') {
+
+                    overlap = Math.min(carrobox.max.z - obstacleBox.min.z, obstacleBox.max.z - carrobox.min.z);
+
+                    }
+
+                    return Math.abs(overlap);
+
+                    }
+
+
+
+                    function checkBuildingCollisions() {
+
+                    const playerBox = new THREE.Box3().setFromObject(carMesh);
+
+                    const direction = carBody.velocity;
+
+
+
+                    for (let i = 0; i < listaEdificios.length; i++) { const edificio=listaEdificios[i]; if
+                      (!edificio.userData.box) continue; // OPTIMIZACIÓN: Si el edificio está lejos, ignorarlo const
+                      distSq=carMesh.position.distanceToSquared(edificio.position); if (distSq> 3600) continue;
+
+
+
+                      const obstacleBox = edificio.userData.box;
+
+
+
+                      if (playerBox.intersectsBox(obstacleBox)) {
+
+                      const overlapX = calculateOverlap(playerBox, obstacleBox, 'x');
+
+                      const overlapY = calculateOverlap(playerBox, obstacleBox, 'y');
+
+                      const overlapZ = calculateOverlap(playerBox, obstacleBox, 'z');
+
+                      const minOverlap = Math.min(overlapX, overlapY, overlapZ);
+
+
+
+                      const bounceFactor = 0.5; // Rebote medio para no quedarse pegado
+
+                      const pushMargin = 1.1; // 10% extra de empuje
+
+
+
+                      if (Math.abs(overlapX) < Math.abs(overlapY) && Math.abs(overlapX) < Math.abs(overlapZ)) { const
+                        push=direction.x> 0 ? -minOverlap : minOverlap;
+
+                        carMesh.position.x += push * pushMargin;
+
+                        carBody.velocity.x *= -bounceFactor;
+
+                        carBody.angularVelocity.set(0, 0, 0);
+
+                        }
+
+                        else if (Math.abs(overlapY) < Math.abs(overlapX) && Math.abs(overlapY) < Math.abs(overlapZ)) {
+                          const push=direction.y> 0 ? -minOverlap : minOverlap;
+
+                          carMesh.position.y += push * pushMargin;
+
+                          carBody.velocity.y = 0;
+
+                          }
+
+                          else {
+
+                          const push = direction.z > 0 ? -minOverlap : minOverlap;
+
+                          carMesh.position.z += push * pushMargin;
+
+                          carBody.velocity.z *= -bounceFactor;
+
+                          carBody.angularVelocity.set(0, 0, 0);
+
+                          }
+
+                          carBody.position.x = carMesh.position.x;
+
+                          carBody.position.y = carMesh.position.y;
+
+                          carBody.position.z = carMesh.position.z;
+
+                          }
+
+                          }
+
+                          }
+
+
+
+                          // NIEVE (Reducida a 1500)
+
+                          const snowCount = 1500;
+
+                          const snowGeo = new THREE.BufferGeometry();
+
+                          const snowPositions = new Float32Array(snowCount * 3);
+
+                          const snowSpeeds = new Float32Array(snowCount);
+
+                          for (let i = 0; i < snowCount; i++) { const x=Math.random() * 1600 - 800; const y=20 +
+                            Math.random() * 100; const z=Math.random() * 1600 - 800; snowPositions[i * 3]=x;
+                            snowPositions[i * 3 + 1]=y; snowPositions[i * 3 + 2]=z; snowSpeeds[i]=0.2 + Math.random() *
+                            0.6; } snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPositions, 3)); const
+                            snowMat=new THREE.PointsMaterial({ size: 0.8, transparent: true, opacity: 0.85 }); const
+                            snowPoints=new THREE.Points(snowGeo, snowMat); scene.add(snowPoints); //===ANIMACIÓN===let
+                            tiempoGlobal=0; function animate() { requestAnimationFrame(animate); const fixedTimeStep=3 /
+                            60; // -- VELOCIDAD REDUCIDA PARA MAYOR CONTROL -- const accel=15; const brake=40; const
+                            turnSpeed=1.5; const maxSpeed=10; const qthree=cannonQuatToThreeQuat(carBody.quaternion);
+                            const forward=new THREE.Vector3(1, 0, 0).applyQuaternion(qthree); forward.y=0;
+                            forward.normalize(); let vx=carBody.velocity.x; let vz=carBody.velocity.z; let
+                            speed=Math.hypot(vx, vz); if (keys.ArrowUp) { vx +=forward.x * accel * fixedTimeStep; vz
+                            +=forward.z * accel * fixedTimeStep; } else if (keys.ArrowDown) { vx -=forward.x * brake *
+                            fixedTimeStep; vz -=forward.z * brake * fixedTimeStep; } else { vx *=(1 - 0.9 *
+                            fixedTimeStep); vz *=(1 - 0.9 * fixedTimeStep); } speed=Math.hypot(vx, vz); if (speed>
+                            maxSpeed) { vx = (vx / speed) * maxSpeed; vz = (vz / speed) * maxSpeed; }
+
+                            carBody.velocity.x = vx; carBody.velocity.z = vz; carBody.velocity.y = 0;
+
+                            const currentAngularY = carBody.angularVelocity.y || 0;
+
+                            if (Math.hypot(carBody.velocity.x, carBody.velocity.z) > 0.25) {
+
+                            if (keys.ArrowLeft) carBody.angularVelocity.y = THREE.MathUtils.lerp(currentAngularY,
+                            turnSpeed, 0.2);
+
+                            else if (keys.ArrowRight) carBody.angularVelocity.y = THREE.MathUtils.lerp(currentAngularY,
+                            -turnSpeed, 0.2);
+
+                            else carBody.angularVelocity.y = THREE.MathUtils.lerp(currentAngularY, 0, 0.15);
+
+                            } else { carBody.angularVelocity.y = THREE.MathUtils.lerp(currentAngularY, 0, 0.3); }
+
+                            world.step(fixedTimeStep);
+
+                            carMesh.position.set(carBody.position.x, CAR_HEIGHT, carBody.position.z);
+
+                            carMesh.quaternion.set(carBody.quaternion.x, carBody.quaternion.y, carBody.quaternion.z,
+                            carBody.quaternion.w);
+
+                            const e = new THREE.Euler().setFromQuaternion(carMesh.quaternion, 'YXZ');
+
+                            e.x = 0; e.z = 0; carMesh.quaternion.setFromEuler(e);
+
+                            carBody.quaternion.x = carMesh.quaternion.x; carBody.quaternion.y = carMesh.quaternion.y;
+
+                            carBody.quaternion.z = carMesh.quaternion.z; carBody.quaternion.w = carMesh.quaternion.w;
+
+                            carBody.angularVelocity.x = 0; carBody.angularVelocity.z = 0;
+
+                            carBody.position.y = CAR_HEIGHT; carBody.velocity.y = 0;
+
+
+
+                            updateCamera();
+
+
+
+                            if (speedEl) speedEl.textContent = Math.round(Math.hypot(carBody.velocity.x,
+                            carBody.velocity.z) * 3.6);
+
+                            tiempoGlobal += fixedTimeStep;
+
+                            for (let i = 0; i < listaRegalos.length; i++) { const obj=listaRegalos[i]; if (!obj)
+                              continue; obj.rotation.y +=0.02; obj.position.y=0.5 + Math.sin(tiempoGlobal * 2 + i) *
+                              0.15; } //===PIÑATAS LATERALES SUAVES===for (let i=0; i < listaPinatas.length; i++) {
+                              const obj=listaPinatas[i]; if (!obj) continue; obj.rotation.y +=0.05; if
+                              (obj.userData.initialX===undefined) obj.userData.initialX=obj.position.x; // Movimiento
+                              lateral suave, lento (0.5) y rango medio (20) obj.position.x=obj.userData.initialX +
+                              Math.sin(tiempoGlobal * 0.5 + i) * 20; obj.position.y=6; } chequeaColisionesConObjetos();
+                              checkBuildingCollisions(); const positions=snowGeo.attributes.position.array; for (let
+                              i=0; i < snowCount; i++) { positions[i * 3 + 1] -=snowSpeeds[i]; if (positions[i * 3 + 1]
+                              < -5) { positions[i * 3]=carMesh.position.x + (Math.random() * 800 - 400); positions[i * 3
+                              + 1]=80 + Math.random() * 60; positions[i * 3 + 2]=carMesh.position.z + (Math.random() *
+                              800 - 400); } } snowGeo.attributes.position.needsUpdate=true; renderer.render(scene,
+                              camera); } animate(); window.addEventListener('resize', ()=> {
+
+                              camera.aspect = window.innerWidth / window.innerHeight;
+
+                              camera.updateProjectionMatrix();
+
+                              renderer.setSize(window.innerWidth, window.innerHeight);
+
+                              });
+
+                              </script>
+
+</body>
+
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+<meta charset="UTF-8" /> 
+     <title>REGALO</title>
+     <link rel="icon" type="image/png" href="./assets/favicon.png"/>
+     <style>
+     </style>
+</head>
+<body>
+<canvas id="myCanvas">
+    <!--El elemento HTML canvas se puede utilizar para dibujar gráficos a través de 
+        secuencias de comandos (por lo general JavaScript ).-->
+</canvas>
+<script type="importmap"> 
+    {
+        "imports":{
+            "three": "./js/three.module.js",
+            "three/OrbitControls": "./js/OrbitControls.js" 
+        }
+}
+</script>
+<script type="module"> 
+    //👉🏽 Mandar llamar a la librería
+    import {RoundedBoxGeometry} from './js/RoundedBoxGeometry.js';
+    import * as THREE from 'three'; 
+    import {OrbitControls} from 'three/OrbitControls';
+    console.log(OrbitControls);
+
+    //👉🏽 Renderer - Realiza una conexión entre el código y el canvas
+    var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('myCanvas'),antialias: true});
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x85929E); //COLOR DE FONDO
+
+    //🎬 Creando nueva escena 
+    var scene = new THREE.Scene();
+
+    //🎥 Agregar una cámara de perspectiva
+    var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 5000);
+    scene.add(camera);
+
+    // Evento para redimensionar el canvas
+
+    // Sizes: Objeto donde se toman los tamaños interiores 'inner' de la ventana.
+    const sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    };
+
+    // Tomando el 'canvas' mediante el id 'myCanvas' del HTML para cambiar sus dimensiones
+    const canvas = document.getElementById('myCanvas');
+
+    // Evento que se ejecutará al redimensionar 'resize' nuestra ventana
+    window.addEventListener('resize', () => {
+
+    // Actualizando los valores del objeto 'sizes' con las medidas internas de la ventana
+    sizes.width = window.innerWidth;
+    sizes.height = window.innerHeight;
+
+    // Actualización de los valores en la cámara como la relación-aspecto y la matriz de proyección.
+    camera.aspect = sizes.width / sizes.height;
+    camera.updateProjectionMatrix();
+
+    // Aplicando al render el nuevo tamaño del 'viewport'
+    renderer.setSize(sizes.width, sizes.height);
+    });
+
+    //👉🏽Settings de la cámara
+    camera.position.set(0, 4, 25);
+
+    //👉🏽Añadiendo los OrbitControls
+    var controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    /*/✏️GridHelper
+    const gridHelper = new THREE.GridHelper(50,10);
+    scene.add (gridHelper);
+
+    //✏️Ejes
+    const axesHelper = new THREE.AxesHelper(50);
+    scene.add (axesHelper);*/
+  
+
+    // 🪄🪄 SECCIÓN DE CÓDIGO 🪄🪄
+
+    //BACKGROUND
+    var loader = new THREE.TextureLoader();
+    var bgTexture = loader.load ('./assets/fondo.jpg')
+    scene.background = bgTexture;
+
+    //LUZ 1
+    var luzAmbiental = new THREE.AmbientLight(0x505050, 0.3);
+    scene.add(luzAmbiental);
+    
+    //LUZ 2
+    var luzRelleno = new THREE.AmbientLight(0x707070, 0.3);
+    scene.add(luzRelleno);
+
+    //LUZ 3
+    var light=new THREE.SpotLight(0xffffff, 0.5);
+    light.position.set(30,50,30);
+    light.target.position.set(10, 100, 0); 
+    scene.add(light);
+    
+    //LUZ 4
+    var light=new THREE.SpotLight(0xffffff, 0.5);
+    light.position.set(-30,50,-30);
+    light.target.position.set(10, 100, 0); 
+    scene.add(light);
+
+     // LUZ 5
+     var luzFrontal = new THREE.DirectionalLight(0xffffff, 0.5);
+    luzFrontal.position.set(0, 100, 100);
+    luzFrontal.target.position.set(10, 100, 0); 
+    scene.add(luzFrontal);
+    scene.add(luzFrontal.target);
+
+    // LUZ 6
+    var luzTrasera = new THREE.DirectionalLight(0xffffff, 0.5);
+    luzTrasera.position.set(0, 100, -100); 
+    luzTrasera.target.position.set(-10, 100, 0);
+    scene.add(luzTrasera); 
+    scene.add(luzTrasera.target);
+
+    //REGALO
+
+    //BASE
+    var base = new RoundedBoxGeometry (5, 5, 5, 3, 0.50);
+    var texture = new THREE.TextureLoader().load("./assets/3.jpg")
+    var material = new THREE.MeshLambertMaterial({map:texture});
+    var mesh = new THREE.Mesh(base,material);
+    scene.add(mesh);
+    mesh.position.set(0,5,0);
+
+    //LISTON
+    var liston = new RoundedBoxGeometry(1.5, 5.1, 5.1, 3, 0.50);
+    var texture1 = new THREE.TextureLoader().load("./assets/liston.jpg")
+    var material1 = new THREE.MeshLambertMaterial({map:texture1});
+
+    var mesh1 = new THREE.Mesh(liston,material1);
+    scene.add(mesh1);
+    mesh1.position.set(0,5,0);
+
+    var mesh2 = new THREE.Mesh(liston,material1);
+    scene.add(mesh2);
+    mesh2.position.set(0,5,0);
+    mesh2.rotateY(Math.PI / 2);
+
+    //MOÑO
+    var torusknot1 = new THREE.TorusKnotGeometry(1,0.3,100,100,2,5);
+    var material1 = new THREE.MeshLambertMaterial({map:texture1});
+    var mesh3 = new THREE.Mesh(torusknot1,material1);
+    scene.add(mesh3);
+    mesh3.position.set(0,8,0);
+    mesh3.rotateX(Math.PI / 2);
+
+      //🎰🎰Rendering y animación
+      requestAnimationFrame(render);
+      function render() {
+
+      //🪄🪄 Animación
+
+      controls.update();
+
+      //Llamado para renderizar y volver a llamar a la misma función (render)
+      renderer.render(scene, camera);
+      requestAnimationFrame(render);
+      }
+</script>
+</body>
+</html>

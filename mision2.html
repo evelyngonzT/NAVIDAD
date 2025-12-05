@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>🎄 NAVIDAD - NIVEL 1 COMPLETO 🎁</title>
+<link rel="icon" type="image/png" href="./assets/favicon.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* --- ESTILOS ORIGINALES RESPETADOS --- */
+body {
+margin: 0;
+font-family: "Mountains of Christmas", cursive;
+background: url("./assets/fondo.jpg") center/cover no-repeat;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+text-align: center;
+color: #fff;
+}
+
+.pantalla {
+background: rgba(255, 0, 0, 0.71);
+padding: 45px 65px;
+border-radius: 25px;
+border: 3px solid #fff;
+backdrop-filter: blur(5px);
+}
+
+.tituloPrincipal {
+font-size: 70px;
+font-weight: 700;
+text-shadow: 3px 3px 12px #008000;
+}
+
+.subtitulo {
+font-size: 28px;
+letter-spacing: 2px;
+color: #ffdf6e;
+}
+
+.instrucciones {
+margin-top: 15px;
+font-size: 22px;
+}
+
+.botonAnimado {
+margin-top: 45px;
+padding: 20px 50px;
+border: none;
+border-radius: 18px;
+font-size: 30px;
+cursor: pointer;
+background: #ff2b2b;
+color: white;
+box-shadow: 0 0 15px #ff0000;
+transition: 0.25s ease-in-out;
+font-family: "Mountains of Christmas", cursive;
+}
+
+.botonAnimado:hover {
+transform: scale(1.08);
+background: #ff6a6a;
+box-shadow: 0 0 25px #ff3b3b;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="pantalla">
+
+<h1 class="tituloPrincipal">🎅 NIVEL 1 COMPLETADO 🏆</h1>
+
+<span class="subtitulo">PREPÁRATE PARA EL NIVEL 2</span><br>
+
+<h2 class="instrucciones">
+<p style="font-size: 28px; font-weight: 700; margin-bottom: 10px;">NUEVOS OBJETIVOS:</p>
+✅ Recoge 7 regalos para ganar 🎁<br>
+❌ Evita golpear solo **3 piñatas** 🎉<br>
+⌨️ Muévete con las flechas ← ↑ ↓ →<br>
+⭐ ¡El desafío es mayor!
+</h2>
+
+
+<button class="botonAnimado" id="btnIniciarNivel2">INICIAR NIVEL 2</button>
+
+</div>
+
+<audio id="audioBurbuja" src="audio/burbuja.mp3" preload="auto"></audio>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const burbuja = document.getElementById('audioBurbuja');
+    
+    // Cambia la acción del botón para redirigir a base.html?nivel=2
+    document.getElementById('btnIniciarNivel2').addEventListener('click', () => {
+        burbuja.play();
+        setTimeout(() => {
+            // Esto le dice a base.html que cargue la configuración del Nivel 2
+            window.location.href = 'base.html?nivel=2'; 
+        }, 300);
+    });
+});
+</script>
+
+</body>
+</html>

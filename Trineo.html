@@ -1,0 +1,845 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+<meta charset="UTF-8" /> 
+     <title>ESCENA NAVIDEÑA FINAL - TRINEO Y SANTA CLAUS</title>
+     <link rel="icon" type="image/png" href="./assets/favicon.png"/>
+     <style>
+         /* Estilos básicos para que el canvas ocupe toda la ventana */
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+     </style>
+</head>
+<body>
+<canvas id="myCanvas">
+</canvas>
+<script type="importmap"> 
+    {
+        "imports":{
+            "three": "./js/three.module.js",
+            "three/OrbitControls": "./js/OrbitControls.js" 
+        }
+}
+</script>
+<script type="module"> 
+    //👉🏽 Mandar llamar a la librería
+    import {RoundedBoxGeometry} from './js/RoundedBoxGeometry.js';
+    import * as THREE from 'three'; 
+    import {OrbitControls} from 'three/OrbitControls';
+
+    //👉🏽 Renderer - Realiza una conexión entre el código y el canvas
+    var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('myCanvas'),antialias: true});
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x2c3e50); // COLOR DE FONDO (Azul oscuro para noche)
+    renderer.shadowMap.enabled = true; // Habilitar sombras
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    //🎬 Creando nueva escena 
+    var scene = new THREE.Scene();
+
+    //🎥 Agregar una cámara de perspectiva
+    var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 5000);
+    scene.add(camera);
+
+    // Evento para redimensionar el canvas
+    const sizes = {
+    width: window.innerWidth,
+    height: window.height,
+    };
+
+    window.addEventListener('resize', () => {
+        sizes.width = window.innerWidth;
+        sizes.height = window.height;
+        camera.aspect = sizes.width / sizes.height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(sizes.width, sizes.height);
+    });
+
+    //👉🏽Settings de la cámara
+    camera.position.set(0, 7, 25); 
+    
+    //👉🏽Añadiendo los OrbitControls
+    var controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.maxDistance = 50;
+    controls.minDistance = 10;
+    controls.target.set(0, 4, -10); // Fija el objetivo en el centro de la formación
+    
+    // 🪄🪄 SECCIÓN DE CÓDIGO 🪄🪄
+
+    // --- GEOMETRÍAS Y MATERIALES REUTILIZABLES ---
+    var materialRojoPrincipal = new THREE.MeshPhongMaterial({ color: 0x8b0000, specular: 0xcccccc, shininess: 50 }); 
+    var materialRojoAcolchado = new THREE.MeshPhongMaterial({ color: 0xc43232, specular: 0xdddddd, shininess: 60 }); 
+    var materialDorado = new THREE.MeshPhongMaterial({ color: 0xffd700, specular: 0xffffff, shininess: 100 }); 
+    var materialGrisMetalico = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, specular: 0xeeeeee, shininess: 80 }); 
+    var materialCafeReno = new THREE.MeshPhongMaterial({ color: 0x6b3e1f, specular: 0x331e0f, shininess: 20 }); 
+    var materialNarizReno = new THREE.MeshBasicMaterial({ color: 0xff4500 }); 
+    var materialCuernos = new THREE.MeshLambertMaterial({ color: 0xa0522d });
+    var materialBlancoNieve = new THREE.MeshLambertMaterial({ color: 0xf8f8f8 }); 
+    var materialPielBlanca = new THREE.MeshPhongMaterial({ color: 0xf0f0f0, specular: 0xffffff, shininess: 30 }); 
+    var materialPielRosa = new THREE.MeshPhongMaterial({ color: 0xffcc99, specular: 0xffe0bd, shininess: 20 }); 
+    var materialOjos = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    var materialBoca = new THREE.MeshLambertMaterial({ color: 0x880000 });
+    var materialCordon = new THREE.MeshLambertMaterial({ color: 0x222222 }); 
+    var materialRegaloVerde = new THREE.MeshLambertMaterial({ color: 0x2ecc71 });
+    var materialRegaloAzul = new THREE.MeshLambertMaterial({ color: 0x3498db });
+    var materialRegaloAmarillo = new THREE.MeshLambertMaterial({ color: 0xf1c40f });
+    var materialRegaloMorado = new THREE.MeshLambertMaterial({ color: 0x9b59b6 });
+    var materialSacoMarron = new THREE.MeshLambertMaterial({ color: 0x8b4513 });
+    var materialListon = new THREE.MeshLambertMaterial({ color: 0xffa07a }); 
+    var materialPezuñas = new THREE.MeshLambertMaterial({ color: 0x333333 }); 
+
+
+    // --- 1. ILUMINACIÓN AMBIENTAL Y EFECTOS ---
+    
+    var luzHemisferica = new THREE.HemisphereLight(0xadd8e6, 0x112233, 0.6); 
+    scene.add(luzHemisferica);
+
+    var luzPrincipal = new THREE.DirectionalLight(0xffffff, 0.8);
+    luzPrincipal.position.set(10, 20, 10);
+    luzPrincipal.castShadow = true;
+    luzPrincipal.shadow.mapSize.width = 1024;
+    luzPrincipal.shadow.mapSize.height = 1024;
+    scene.add(luzPrincipal);
+    
+    var luzTrasera = new THREE.DirectionalLight(0xadd8e6, 0.3); 
+    luzTrasera.position.set(-10, 10, -10);
+    scene.add(luzTrasera);
+    
+    // Luz de Rudolph (SpotLight para simular brillo)
+    var luzRudolph = new THREE.SpotLight(0xff4500, 3, 20, Math.PI / 10, 0.5);
+    scene.add(luzRudolph);
+
+
+    // --- 2. FONDO: ESTRELLAS DINÁMICAS ---
+    const starGeometry = new THREE.BufferGeometry();
+    const starMaterial = new THREE.PointsMaterial({
+        color: 0xaaaaaa,
+        size: 0.1,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true
+    });
+    
+    const starVertices = [];
+    for (let i = 0; i < 5000; i++) {
+        const x = (Math.random() - 0.5) * 200;
+        const y = (Math.random() - 0.5) * 200;
+        const z = (Math.random() - 0.5) * 200;
+        starVertices.push(x, y, z);
+    }
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+
+
+    // --- 3. SUELO DE NIEVE ---
+    var geometriaNieve = new THREE.PlaneGeometry(100, 100);
+    var mallaNieve = new THREE.Mesh(geometriaNieve, materialBlancoNieve);
+    mallaNieve.rotation.x = THREE.MathUtils.degToRad(-90);
+    mallaNieve.position.y = -1; 
+    mallaNieve.receiveShadow = true;
+    scene.add(mallaNieve);
+
+
+    // --- 4. TRINEO DE SANTA ---
+    var trineo = new THREE.Group();
+    trineo.rotation.y = THREE.MathUtils.degToRad(90); 
+
+    // CUERPO PRINCIPAL DEL TRINEO
+    var geometriaBaseInferior = new THREE.BoxGeometry(8, 2, 4); 
+    var mallaBaseInferior = new THREE.Mesh(geometriaBaseInferior, materialRojoPrincipal);
+    mallaBaseInferior.position.set(0, 2.5, 0); 
+    mallaBaseInferior.castShadow = true;
+    trineo.add(mallaBaseInferior);
+
+    var geometriaBaseSuperior = new THREE.BoxGeometry(7.5, 1.5, 3.5);
+    var mallaBaseSuperior = new THREE.Mesh(geometriaBaseSuperior, materialRojoPrincipal);
+    mallaBaseSuperior.position.set(0, 3.5, 0); 
+    mallaBaseSuperior.castShadow = true;
+    trineo.add(mallaBaseSuperior);
+
+    // Adornos Dorados en los bordes
+    var geometriaBorde = new THREE.TorusGeometry(3.9, 0.08, 8, 50, Math.PI * 2);
+    var mallaBorde = new THREE.Mesh(geometriaBorde, materialDorado);
+    mallaBorde.rotation.x = THREE.MathUtils.degToRad(90);
+    mallaBorde.scale.set(7.8 / (3.9 * 2), 3.8 / (3.9 * 2), 1);
+    mallaBorde.position.set(0, 3.7, 0);
+    trineo.add(mallaBorde);
+
+
+    // --- ASIENTOS DE TERCIOPELO Y PIEL ---
+    var geometriaAsiento = new RoundedBoxGeometry(6.5, 0.8, 3, 0.3, 6); 
+    var mallaAsiento = new THREE.Mesh(geometriaAsiento, materialRojoAcolchado);
+    mallaAsiento.position.set(0, 4.2, 0);
+    mallaAsiento.castShadow = true;
+    trineo.add(mallaAsiento);
+
+    var geometriaRespaldoPiel = new RoundedBoxGeometry(1.0, 2.8, 3.2, 0.5, 6); 
+    var mallaRespaldoPiel = new THREE.Mesh(geometriaRespaldoPiel, materialPielBlanca); 
+    mallaRespaldoPiel.position.set(-3.5, 5.5, 0); 
+    mallaRespaldoPiel.castShadow = true;
+    trineo.add(mallaRespaldoPiel);
+
+    // --- Patines Cilíndricos Robustos ---
+    var geometriaPatinCilindro = new THREE.CylinderGeometry(0.3, 0.3, 10, 16); 
+    
+    function crearPatinCilindrico(z_offset) {
+        var mallaPatin = new THREE.Mesh(geometriaPatinCilindro, materialGrisMetalico);
+        mallaPatin.rotation.z = THREE.MathUtils.degToRad(90); // Horizontal (A lo largo de X)
+        mallaPatin.position.set(0, 0.5, z_offset);
+        mallaPatin.castShadow = true;
+        return mallaPatin;
+    }
+    
+    var patinIzq = crearPatinCilindrico(2.2);
+    trineo.add(patinIzq);
+    var patinDer = crearPatinCilindrico(-2.2);
+    trineo.add(patinDer);
+
+
+    // --- 5. SACO DE REGALOS (DETALLADO) ---
+    var saco = new THREE.Group();
+
+    var geometriaSaco = new THREE.CylinderGeometry(1.5, 2, 4, 32);
+    var mallaSaco = new THREE.Mesh(geometriaSaco, materialSacoMarron);
+    mallaSaco.castShadow = true;
+    saco.add(mallaSaco);
+
+    // Nieve en la base del saco
+    var geometriaNieveSaco = new THREE.SphereGeometry(2.2, 16, 8, 0, Math.PI * 2, 0, Math.PI / 4);
+    var mallaNieveSaco = new THREE.Mesh(geometriaNieveSaco, materialBlancoNieve);
+    mallaNieveSaco.position.y = -1.5; 
+    mallaNieveSaco.scale.y = 0.5; 
+    saco.add(mallaNieveSaco);
+
+    // Geometrías para regalos (para reutilizar)
+    var geomCajaPeque = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+    var geomCajaMedia = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+    var geomCilindroPeque = new THREE.CylinderGeometry(0.5, 0.5, 1, 16);
+    var geomCajaGrande = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+
+    function crearRegalo(geometry, material, x, y, z, rotX, rotY, rotZ, conListon = false) {
+        var regalo = new THREE.Mesh(geometry, material);
+        regalo.position.set(x, y, z);
+        regalo.rotation.set(rotX, rotY, rotZ);
+        regalo.castShadow = true;
+        saco.add(regalo);
+
+        if (conListon) {
+            // Listón vertical
+            var listonVert = new THREE.Mesh(new THREE.BoxGeometry(geometry.parameters.width * 1.05, 0.15, 0.15), materialListon);
+            listonVert.position.y = y;
+            listonVert.position.x = x;
+            listonVert.position.z = z;
+            listonVert.rotation.copy(regalo.rotation);
+            saco.add(listonVert);
+
+            // Listón horizontal
+            var listonHoriz = new THREE.Mesh(new THREE.BoxGeometry(0.15, geometry.parameters.height * 1.05, 0.15), materialListon);
+            listonHoriz.position.y = y;
+            listonHoriz.position.x = x;
+            listonHoriz.position.z = z;
+            listonHoriz.rotation.copy(regalo.rotation);
+            saco.add(listonHoriz);
+        }
+    }
+
+    // Regalo 1: Verde (Saliendo de la bolsa)
+    crearRegalo(geomCajaMedia, materialRegaloVerde, 0.5, 3.2, 0.8, 0.2, 0.5, 0.1, true);
+    // Regalo 2: Azul
+    crearRegalo(geomCajaPeque, materialRegaloAzul, -0.8, 2.9, -0.6, -0.1, 0.8, 0.3, true);
+    // Regalo 3: Amarillo (Cilindro)
+    crearRegalo(geomCilindroPeque, materialRegaloAmarillo, 1.2, 3.0, -0.2, 0.5, -0.3, 0.4);
+    // Regalo 4: Morado (Más metido en la bolsa)
+    crearRegalo(geomCajaPeque, materialRegaloMorado, 0.1, 2.5, -1.0, -0.3, -0.6, 0.2, true);
+    // Regalo 5: Pequeño rojo (Apenas asomando)
+    crearRegalo(geomCajaPeque, materialRojoPrincipal, -1.0, 2.7, 0.9, 0.1, 0.9, -0.2);
+    // Regalo 6: Grande azul (Al fondo)
+    crearRegalo(geomCajaGrande, materialRegaloAzul, -0.5, 2.5, 0.0, 0, 0, 0);
+
+
+    saco.position.set(-2, 5.5, 0); 
+    trineo.add(saco);
+    
+    scene.add(trineo);
+
+    // --- 6. SANTA CLAUS (TU VERSIÓN ORIGINAL) ---
+    // ===============================
+    //   GRUPO PRINCIPAL DEL PERSONAJE
+    // ===============================
+    var personaje = new THREE.Group();
+    scene.add(personaje);
+
+    // ===============================
+    //   CABEZA
+    // ===============================
+    var cabezaGeometria = new THREE.SphereGeometry(6);
+    var materialCabeza = new THREE.MeshLambertMaterial({ color: 0xffcc99 }); // Color de piel por defecto
+    var cabeza = new THREE.Mesh(cabezaGeometria, materialCabeza);
+    cabeza.position.set(0, 23, 0);
+    cabeza.castShadow = true;
+    personaje.add(cabeza);
+
+    // ===============================
+    //   BARRIGA
+    // ===============================
+    var barrigaGeometria = new THREE.SphereGeometry(10);
+    var materialBarriga = new THREE.MeshLambertMaterial({ color: 0x8b0000 }); // Rojo
+    var barriga = new THREE.Mesh(barrigaGeometria, materialBarriga);
+    barriga.position.set(0, 10, 0);
+    barriga.castShadow = true;
+    personaje.add(barriga);
+
+    // ===============================
+    //   SOMBRERO
+    // ===============================
+    var sombreroCilindro = new THREE.CylinderGeometry(0, 4.5, 8, 50);
+    var sombreroMaterial = new THREE.MeshLambertMaterial({ color: 0x8b0000 }); // Rojo
+    var sombrero = new THREE.Mesh(sombreroCilindro, sombreroMaterial);
+    sombrero.position.set(0, 32, 0);
+    sombrero.rotation.y = 3;
+    sombrero.castShadow = true;
+    personaje.add(sombrero);
+
+    // POMPON
+    var pomponEsfera = new THREE.SphereGeometry(1);
+    var pomponMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Blanco
+    var pompon = new THREE.Mesh(pomponEsfera, pomponMaterial);
+    pompon.position.set(0, 36, 0);
+    pompon.castShadow = true;
+    personaje.add(pompon);
+
+    // BASE SOMBRERO DORADA (Ahora blanca por nieve)
+    var baseSombreroCilindro = new THREE.CylinderGeometry(4, 4.5, 1, 50);
+    var baseSombreroMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Blanco
+    var baseSombrero = new THREE.Mesh(baseSombreroCilindro, baseSombreroMaterial);
+    baseSombrero.position.set(0, 28.6, 0);
+    baseSombrero.castShadow = true;
+    personaje.add(baseSombrero);
+
+    // BASE SOMBRERO ROJA (Ahora rojo oscuro)
+    var baseSombreroRojaCilindro = new THREE.CylinderGeometry(6, 6, 1, 50);
+    var baseSombreroRojaMaterial = new THREE.MeshLambertMaterial({ color: 0xcc0000 }); // Rojo oscuro
+    var baseSombreroRoja = new THREE.Mesh(baseSombreroRojaCilindro, baseSombreroRojaMaterial);
+    baseSombreroRoja.position.set(0, 27.5, 0);
+    baseSombreroRoja.castShadow = true;
+    personaje.add(baseSombreroRoja);
+
+    // ===============================
+    //   PELO
+    // ===============================
+    var peloCilindro = new THREE.CylinderGeometry(5.3, 5.3, 2, 50);
+    var peloMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Blanco
+    var pelo = new THREE.Mesh(peloCilindro, peloMaterial);
+    pelo.position.set(0, 26, 0);
+    pelo.castShadow = true;
+    personaje.add(pelo);
+
+    // ===============================
+    //   BARBA
+    // ===============================
+    var barbaEsfera = new THREE.SphereGeometry(5);
+    var barbaMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Blanco
+    var barba = new THREE.Mesh(barbaEsfera, barbaMaterial);
+    barba.position.set(0, 20, 2);
+    barba.castShadow = true;
+    personaje.add(barba);
+
+    // ===============================
+    //   OJOS (blancos)
+    // ===============================
+    var ojoMaterial = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+
+    // Ojo izquierdo
+    var ojoIzquierdo = new THREE.Mesh(new THREE.SphereGeometry(1.1), ojoMaterial);
+    ojoIzquierdo.position.set(-1.1, 24.1, 5);
+    personaje.add(ojoIzquierdo);
+
+    // Ojo derecho
+    var ojoDerecho = new THREE.Mesh(new THREE.SphereGeometry(1.1), ojoMaterial);
+    ojoDerecho.position.set(1.1, 24.1, 5);
+    personaje.add(ojoDerecho);
+
+    // ===============================
+    //   PUPILAS
+    // ===============================
+    var materialPupila = new THREE.MeshLambertMaterial({ color: 0x000000 });
+
+    var pupilaIzquierda = new THREE.Mesh(new THREE.SphereGeometry(0.6), materialPupila);
+    pupilaIzquierda.position.set(-1.2, 24.3, 5.7);
+    personaje.add(pupilaIzquierda);
+
+    var pupilaDerecha = new THREE.Mesh(new THREE.SphereGeometry(0.6), materialPupila);
+    pupilaDerecha.position.set(1.2, 24.3, 5.7);
+    personaje.add(pupilaDerecha);
+
+    // ===============================
+    //   BRILLOS OJOS
+    // ===============================
+    var matBrillo = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+
+    function brillo(x,y,z, size){
+        var b = new THREE.Mesh(new THREE.SphereGeometry(size), matBrillo);
+        b.position.set(x,y,z);
+        personaje.add(b);
+    }
+
+    brillo(-1.3, 24.3, 6.15, 0.16);
+    brillo(-1.4, 24.5, 6.0, 0.24);
+    brillo(1.3, 24.3, 6.15, 0.16);
+    brillo(1.4, 24.5, 6.0, 0.24);
+
+    // ===============================
+    //   NARIZ
+    // ===============================
+    var nariz = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.6, 0.4, 8, 8),
+        new THREE.MeshLambertMaterial({ color: 0xffcc99 }) // Color de piel
+    );
+    nariz.position.set(0, 22.9, 6);
+    personaje.add(nariz);
+
+    // ===============================
+    //   BOCA
+    // ===============================
+    var boca = new THREE.Mesh(new THREE.SphereGeometry(0.6), new THREE.MeshLambertMaterial({ color: 0x000000 }));
+    boca.position.set(0,21.5,6.4);
+    personaje.add(boca);
+
+    // ===============================
+    //   MEJILLAS
+    // ===============================
+    var matMejilla = new THREE.MeshLambertMaterial({ color: 0xffa07a }); // Rosa claro
+
+    var mejillaIzq = new THREE.Mesh(new THREE.SphereGeometry(0.7), matMejilla);
+    mejillaIzq.position.set(-2.6,22.4,4.8);
+    personaje.add(mejillaIzq);
+
+    var mejillaDer = new THREE.Mesh(new THREE.SphereGeometry(0.7), matMejilla);
+    mejillaDer.position.set(2.6,22.4,4.8);
+    personaje.add(mejillaDer);
+
+    // ===============================
+    //   BOTONES
+    // ===============================
+    function boton(y,z,size){
+        var b = new THREE.Mesh(
+            new THREE.SphereGeometry(size),
+            new THREE.MeshLambertMaterial({ color: 0xffffff }) // Blanco
+        );
+        b.position.set(0,y,z);
+        personaje.add(b);
+    }
+
+    boton(15.5,8,0.7);
+    boton(13.5,8.9,0.8);
+    boton(11.4,9.4,0.9);
+
+    // ===============================
+    //   CINTURÓN Y EVILLAS
+    // ===============================
+    var materialCinturon = new THREE.MeshLambertMaterial({ color: 0x333333 }); // Gris oscuro
+
+    var meshCinturon = new THREE.Mesh(new THREE.CylinderGeometry(10.2, 9.8, 2, 50), materialCinturon);
+    meshCinturon.position.set(0,8,0);
+    meshCinturon.castShadow = true;
+    personaje.add(meshCinturon);
+
+    // Evilla negra
+    var meshEvillaNegra = new THREE.Mesh(new THREE.BoxGeometry(3,3,3), new THREE.MeshLambertMaterial({ color: 0x000000 })); // Negro
+    meshEvillaNegra.position.set(0,8,8.9);
+    personaje.add(meshEvillaNegra);
+
+    // Evilla roja
+    var meshEvillaRoja = new THREE.Mesh(new THREE.BoxGeometry(2,2,2), new THREE.MeshLambertMaterial({ color: 0x8b0000 })); // Rojo
+    meshEvillaRoja.position.set(0,8,9.5);
+    personaje.add(meshEvillaRoja);
+
+    // ===============================
+    //   BRAZO IZQUIERDO
+    // ===============================
+    var matBrazo = new THREE.MeshLambertMaterial({ color: 0x8b0000 }); // Rojo
+
+    var brazoIzq = new THREE.Mesh(new THREE.CylinderGeometry(1,3,8,32), matBrazo);
+    brazoIzq.position.set(-9,15,0);
+    brazoIzq.rotation.z = 1.2;
+    brazoIzq.castShadow = true;
+    personaje.add(brazoIzq);
+
+    // CONTORNO IZQ
+    var contornoBrazoIzq = new THREE.Mesh(
+        new THREE.CylinderGeometry(1,2,1,50),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }) // Blanco
+    );
+    contornoBrazoIzq.position.set(-13.15,16.65,0);
+    contornoBrazoIzq.rotation.z = 4.34;
+    personaje.add(contornoBrazoIzq);
+
+    // MANO IZQUIERDA
+    var manoIzq = new THREE.Mesh(
+        new RoundedBoxGeometry(2.8,4,1.9,5,10),
+        new THREE.MeshLambertMaterial({ color: 0xffcc99 }) // Piel
+    );
+    manoIzq.position.set(-14.7,17.2,0);
+    manoIzq.rotation.z = 4.34;
+    personaje.add(manoIzq);
+
+    // DEDO IZQUIERDO
+    var dedoIzq = new THREE.Mesh(
+        new RoundedBoxGeometry(1.3,3,1.3,5,10),
+        new THREE.MeshLambertMaterial({ color: 0xffcc99 }) // Piel
+    );
+    dedoIzq.position.set(-13.7,17.9,0);
+    dedoIzq.rotation.y = 5;
+    personaje.add(dedoIzq);
+
+    // ===============================
+    //   BRAZO DERECHO (igual al izquierdo)
+    // ===============================
+    var brazoDer = new THREE.Mesh(new THREE.CylinderGeometry(1,3,8,32), matBrazo);
+    brazoDer.position.set(9,15,0);
+    brazoDer.rotation.z = -1.2;
+    brazoDer.castShadow = true;
+    personaje.add(brazoDer);
+
+    // CONTORNO DER
+    var contornoBrazoDer = new THREE.Mesh(
+        new THREE.CylinderGeometry(1,2,1,50),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }) // Blanco
+    );
+    contornoBrazoDer.position.set(13.15,16.65,0);
+    contornoBrazoDer.rotation.z = -4.34;
+    personaje.add(contornoBrazoDer);
+
+    // MANO DERECHA
+    var manoDer = new THREE.Mesh(
+        new RoundedBoxGeometry(2.8,4,1.9,5,10),
+        new THREE.MeshLambertMaterial({ color: 0xffcc99 }) // Piel
+    );
+    manoDer.position.set(14.7,17.2,0);
+    manoDer.rotation.z = -4.34;
+    personaje.add(manoDer);
+
+    // DEDO DERECHO
+    var dedoDer = new THREE.Mesh(
+        new RoundedBoxGeometry(1.3,3,1.3,5,10),
+        new THREE.MeshLambertMaterial({ color: 0xffcc99 }) // Piel
+    );
+    dedoDer.position.set(13.7,17.9,0);
+    dedoDer.rotation.y = -5;
+    personaje.add(dedoDer);
+
+    // ===============================
+    //   PIERNA IZQUIERDA
+    // ===============================
+    var piernaIzq = new THREE.Mesh(new THREE.CylinderGeometry(1,3,8,32), matBrazo);
+    piernaIzq.position.set(-3,-2,0);
+    piernaIzq.rotation.x = 3.13;
+    piernaIzq.castShadow = true;
+    personaje.add(piernaIzq);
+
+    // CALCETÍN IZQ
+    var calcetinIzq = new THREE.Mesh(
+        new THREE.CylinderGeometry(2,2,1,50),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }) // Blanco
+    );
+    calcetinIzq.position.set(-3,-4.3,0);
+    personaje.add(calcetinIzq);
+
+    // ZAPATO IZQ
+    var zapatoIzq = new THREE.Mesh(
+        new THREE.CapsuleGeometry(2.5,3,30,30),
+        new THREE.MeshLambertMaterial({ color: 0x222222 }) // Negro
+    );
+    zapatoIzq.position.set(-3,-7,0);
+    zapatoIzq.rotation.x = Math.PI/2;
+    personaje.add(zapatoIzq);
+
+    // ===============================
+    //   PIERNA DERECHA
+    // ===============================
+    var piernaDer = new THREE.Mesh(new THREE.CylinderGeometry(1,3,8,32), matBrazo);
+    piernaDer.position.set(3,-2,0);
+    piernaDer.rotation.x = 3.13;
+    piernaDer.castShadow = true;
+    personaje.add(piernaDer);
+
+    // CALCETÍN DER
+    var calcetinDer = new THREE.Mesh(
+        new THREE.CylinderGeometry(2,2,1,50),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }) // Blanco
+    );
+    calcetinDer.position.set(3,-4.3,0);
+    personaje.add(calcetinDer);
+
+    // ZAPATO DER
+    var zapatoDer = new THREE.Mesh(
+        new THREE.CapsuleGeometry(2.5,3,30,30),
+        new THREE.MeshLambertMaterial({ color: 0x222222 }) // Negro
+    );
+    zapatoDer.position.set(3,-7,0);
+    zapatoDer.rotation.x = Math.PI/2;
+    personaje.add(zapatoDer);
+
+    // ===============================================
+    //   CONTROL FINAL PARA MOVER/ROTAR/ESCALAR TODO (SANTA)
+    // ===============================================
+
+    // Posicionamos a Santa en el trineo (en el asiento Z=-3.5 después de la rotación)
+    personaje.position.set(0, 5.6, -3.5); 
+
+    // rotar personaje para mirar hacia adelante (Z negativo)
+    personaje.rotation.set(0, Math.PI, 0); 
+
+    // escalar personaje
+    personaje.scale.set(0.12, 0.12, 0.12);
+    
+    // --- 7. RENOS SIMPLES (CÓDIGO ORIGINAL PROPORCIONADO) ---
+
+    /** Crea un reno simple (Estilo original del código de entrada) */
+    function crearReno(esRudolph = false) {
+        var reno = new THREE.Group();
+        reno.name = esRudolph ? 'Rudolph' : 'Reno';
+        
+        // Cuerpo (Esfera)
+        var geometriaCuerpo = new THREE.SphereGeometry(1.0, 32, 32); 
+        var mallaCuerpo = new THREE.Mesh(geometriaCuerpo, materialCafeReno);
+        mallaCuerpo.position.y = 1;
+        mallaCuerpo.castShadow = true;
+        reno.add(mallaCuerpo);
+
+        // Cabeza
+        var geometriaCabeza = new THREE.SphereGeometry(0.5, 32, 16);
+        var mallaCabeza = new THREE.Mesh(geometriaCabeza, materialCafeReno);
+        mallaCabeza.position.set(1.4, 1.5, 0);
+        mallaCabeza.castShadow = true;
+        reno.add(mallaCabeza);
+
+        // Nariz
+        var geometriaNariz = new THREE.SphereGeometry(0.2, 16, 16);
+        var materialNariz = esRudolph ? materialNarizReno : materialCafeReno;
+        var mallaNariz = new THREE.Mesh(geometriaNariz, materialNariz);
+        mallaNariz.name = 'nariz'; 
+        mallaNariz.position.set(1.9, 1.5, 0);
+        reno.add(mallaNariz);
+        
+        // Cuernos (Cilindros simples)
+        const crearRamaCuerno = (length, radius, x, y, z, rotZ) => {
+            const m = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length, 8), materialCuernos);
+            m.position.set(x, y, z);
+            m.rotation.z = THREE.MathUtils.degToRad(rotZ);
+            return m;
+        };
+
+        // Cuerno Izquierdo (Patrón simple)
+        reno.add(crearRamaCuerno(1.0, 0.1, 1.1, 2.0, 0.3, 45));
+        reno.add(crearRamaCuerno(0.5, 0.08, 1.5, 2.3, 0.3, 0));
+        
+        // Cuerno Derecho (Patrón simple)
+        reno.add(crearRamaCuerno(1.0, 0.1, 1.1, 2.0, -0.3, -45));
+        reno.add(crearRamaCuerno(0.5, 0.08, 1.5, 2.3, -0.3, 0));
+
+        // Piernas (Cilindros simples)
+        var geometriaPierna = new THREE.CylinderGeometry(0.2, 0.2, 2.0, 16);
+        const y_pierna = 0.0;
+        const x_pierna = 0.5;
+        const z_pierna = 0.3;
+        
+        reno.piernaDelIzq = new THREE.Mesh(geometriaPierna, materialCafeReno);
+        reno.piernaDelIzq.position.set(x_pierna, y_pierna, z_pierna);
+        reno.piernaDelIzq.castShadow = true;
+        reno.add(reno.piernaDelIzq);
+
+        reno.piernaDelDer = reno.piernaDelIzq.clone();
+        reno.piernaDelDer.position.z = -z_pierna;
+        reno.add(reno.piernaDelDer);
+
+        reno.piernaTraIzq = reno.piernaDelIzq.clone();
+        reno.piernaTraIzq.position.x = -x_pierna;
+        reno.add(reno.piernaTraIzq);
+
+        reno.piernaTraDer = reno.piernaDelDer.clone();
+        reno.piernaTraDer.position.x = -x_pierna;
+        reno.add(reno.piernaTraDer);
+        
+        // El reno debe mirar hacia Z negativo (hacia adelante)
+        reno.rotation.y = THREE.MathUtils.degToRad(90); 
+        return reno;
+    }
+    
+    // --- POSICIONAMIENTO DE LOS RENOS EN PAREJAS ---
+    
+    // Distancia entre los renos de cada pareja (en el eje X)
+    const separacion_x = 2.0; 
+    // Distancia entre las parejas (en el eje Z)
+    const separacion_z = 10.0; 
+    
+    // Rudolph (Líder en el centro)
+    const reno1 = crearReno(true); 
+    reno1.position.z = -30;
+    reno1.position.x = 0; 
+    scene.add(reno1);
+    
+    // Pareja 1: Reno 2 y Reno 3
+    const reno2 = crearReno(false);
+    reno2.position.z = -20;
+    reno2.position.x = -separacion_x / 2; // Izquierda
+    scene.add(reno2);
+    
+    const reno3 = crearReno(false);
+    reno3.position.z = -20;
+    reno3.position.x = separacion_x / 2; // Derecha
+    scene.add(reno3);
+
+    // Pareja 2 (La más cercana al trineo): Reno 4 y Reno 5
+    const reno4 = crearReno(false);
+    reno4.position.z = -10;
+    reno4.position.x = -separacion_x / 2; // Izquierda
+    scene.add(reno4);
+    
+    const reno5 = crearReno(false);
+    reno5.position.z = -10;
+    reno5.position.x = separacion_x / 2; // Derecha
+    scene.add(reno5);
+
+
+    // --- CABLES Y CUERDAS DE CONEXIÓN ---
+    
+    const unirCordon = (x1, z1, x2, z2, y) => {
+        const path = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(x1, y, z1), 
+            new THREE.Vector3((x1+x2)/2, y + 0.3, (z1+z2)/2), 
+            new THREE.Vector3(x2, y, z2)
+        ]);
+        const geom = new THREE.TubeGeometry(path, 64, 0.1, 8, false);
+        const malla = new THREE.Mesh(geom, materialCordon);
+        return malla;
+    };
+    
+    const yCuerda = 1.5; 
+    const z_body_offset = 0.8; // Desplazamiento de la nariz/cola del reno simple
+
+    // 1. Cuerda LÍDER (Reno 1) a PAREJA 1 (Reno 2 y 3)
+    // Conecta la nariz de R1 a un punto central detrás
+    const zReno1Nariz = reno1.position.z - z_body_offset;
+    const zPareja1Centro = reno2.position.z + z_body_offset;
+    
+    const cuerdaReno1Centro = unirCordon(
+        reno1.position.x, zReno1Nariz, 
+        reno1.position.x, zPareja1Centro, 
+        yCuerda
+    );
+    scene.add(cuerdaReno1Centro);
+
+    // Cuerda de separación (punto central a reno 2 y 3)
+    const cuerdaR2Central = unirCordon(
+        reno2.position.x, zPareja1Centro, 
+        reno2.position.x, reno2.position.z + z_body_offset, 
+        yCuerda
+    );
+    scene.add(cuerdaR2Central);
+    
+    const cuerdaR3Central = unirCordon(
+        reno3.position.x, zPareja1Centro, 
+        reno3.position.x, reno3.position.z + z_body_offset, 
+        yCuerda
+    );
+    scene.add(cuerdaR3Central);
+
+
+    // 2. Cuerda PAREJA 1 (Reno 2 y 3) a PAREJA 2 (Reno 4 y 5)
+    const zPareja2Centro = reno4.position.z + z_body_offset;
+    
+    // R2 Nariz -> R4 Cola
+    const cuerdaR2R4 = unirCordon(
+        reno2.position.x, reno2.position.z - z_body_offset, 
+        reno4.position.x, reno4.position.z + z_body_offset, 
+        yCuerda
+    );
+    scene.add(cuerdaR2R4);
+
+    // R3 Nariz -> R5 Cola
+    const cuerdaR3R5 = unirCordon(
+        reno3.position.x, reno3.position.z - z_body_offset, 
+        reno5.position.x, reno5.position.z + z_body_offset, 
+        yCuerda
+    );
+    scene.add(cuerdaR3R5);
+    
+
+    // 3. Cuerda PAREJA 2 (Reno 4 y 5) al TRINEO
+    const zTrineoEnganche = -5; // Delantera del trineo
+
+    // R4 Nariz -> Trineo
+    const cuerdaR4Trineo = unirCordon(
+        reno4.position.x, reno4.position.z - z_body_offset, 
+        reno4.position.x, zTrineoEnganche, 
+        yCuerda
+    );
+    scene.add(cuerdaR4Trineo);
+    
+    // R5 Nariz -> Trineo
+    const cuerdaR5Trineo = unirCordon(
+        reno5.position.x, reno5.position.z - z_body_offset, 
+        reno5.position.x, zTrineoEnganche, 
+        yCuerda
+    );
+    scene.add(cuerdaR5Trineo);
+
+
+    // Contadores de animación
+    var troteOffset = 0;
+    var velocidadTrote = 0.05;
+
+    //🎰🎰Rendering y animación
+    requestAnimationFrame(render);
+    function render(time) {
+        
+        // --- Animación de Trote y Movimiento ---
+        troteOffset += velocidadTrote;
+        
+        const renos = [reno1, reno2, reno3, reno4, reno5];
+        
+        renos.forEach((reno, index) => {
+            // Movimiento vertical (trote)
+            reno.position.y = Math.sin(troteOffset + (index) * 0.5) * 0.2; 
+            
+            // Animación de piernas (Rotación en X)
+            if(reno.piernaDelIzq) {
+                const offsetDel = Math.sin(troteOffset + index * 0.5) * 0.3;
+                const offsetTra = Math.sin(troteOffset + index * 0.5 + Math.PI) * 0.3;
+
+                // Rotación en eje X para simular movimiento hacia adelante/atrás
+                reno.piernaDelIzq.rotation.x = offsetDel;
+                reno.piernaDelDer.rotation.x = -offsetDel; 
+
+                reno.piernaTraIzq.rotation.x = offsetTra;
+                reno.piernaTraDer.rotation.x = -offsetTra; 
+            }
+        });
+        
+        // Actualizar la luz de Rudolph (posición de la nariz)
+        if (reno1.getObjectByName('Rudolph')) {
+            const nariz = reno1.getObjectByName('nariz');
+            if (nariz) {
+                 const worldPos = new THREE.Vector3();
+                 nariz.getWorldPosition(worldPos);
+                 luzRudolph.position.copy(worldPos);
+                 // La luz apunta hacia adelante (Z negativo)
+                 luzRudolph.target.position.set(worldPos.x, worldPos.y, worldPos.z - 10);
+                 luzRudolph.target.updateMatrixWorld();
+            }
+        }
+
+        controls.update();
+
+        //Llamado para renderizar y volver a llamar a la misma función (render)
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+<meta charset="UTF-8" /> 
+     <title>PINATA</title>
+     <link rel="icon" type="image/png" href="./assets/favicon.png"/>
+     <style>
+     </style>
+</head>
+<body>
+<canvas id="myCanvas">
+    <!--El elemento HTML canvas se puede utilizar para dibujar gráficos a través de 
+        secuencias de comandos (por lo general JavaScript ).-->
+</canvas>
+<script type="importmap"> 
+    {
+        "imports":{
+            "three": "./js/three.module.js",
+            "three/OrbitControls": "./js/OrbitControls.js" 
+        }
+}
+</script>
+<script type="module"> 
+    //👉🏽 Mandar llamar a la librería
+    import {RoundedBoxGeometry} from './js/RoundedBoxGeometry.js';
+    import * as THREE from 'three'; 
+    import {OrbitControls} from 'three/OrbitControls';
+    console.log(OrbitControls);
+
+    //👉🏽 Renderer - Realiza una conexión entre el código y el canvas
+    var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('myCanvas'),antialias: true});
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x85929E); //COLOR DE FONDO
+
+    //🎬 Creando nueva escena 
+    var scene = new THREE.Scene();
+
+    //🎥 Agregar una cámara de perspectiva
+    var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 5000);
+    scene.add(camera);
+
+    // Evento para redimensionar el canvas
+
+    // Sizes: Objeto donde se toman los tamaños interiores 'inner' de la ventana.
+    const sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    };
+
+    // Tomando el 'canvas' mediante el id 'myCanvas' del HTML para cambiar sus dimensiones
+    const canvas = document.getElementById('myCanvas');
+
+    // Evento que se ejecutará al redimensionar 'resize' nuestra ventana
+    window.addEventListener('resize', () => {
+
+    // Actualizando los valores del objeto 'sizes' con las medidas internas de la ventana
+    sizes.width = window.innerWidth;
+    sizes.height = window.innerHeight;
+
+    // Actualización de los valores en la cámara como la relación-aspecto y la matriz de proyección.
+    camera.aspect = sizes.width / sizes.height;
+    camera.updateProjectionMatrix();
+
+    // Aplicando al render el nuevo tamaño del 'viewport'
+    renderer.setSize(sizes.width, sizes.height);
+    });
+
+    //👉🏽Settings de la cámara
+    camera.position.set(0, 4, 25);
+
+    //👉🏽Añadiendo los OrbitControls
+    var controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    /*/✏️GridHelper
+    const gridHelper = new THREE.GridHelper(50,10);
+    scene.add (gridHelper);
+
+    //✏️Ejes
+    const axesHelper = new THREE.AxesHelper(50);
+    scene.add (axesHelper);*/
+  
+
+    // 🪄🪄 SECCIÓN DE CÓDIGO 🪄🪄
+
+    //BACKGROUND
+    var loader = new THREE.TextureLoader();
+    var bgTexture = loader.load ('./assets/fondo.jpg')
+    scene.background = bgTexture;
+
+    //LUZ 1
+    var luzAmbiental = new THREE.AmbientLight(0x505050, 0.3);
+    scene.add(luzAmbiental);
+    
+    //LUZ 2
+    var luzRelleno = new THREE.AmbientLight(0x707070, 0.3);
+    scene.add(luzRelleno);
+
+    //LUZ 3
+    var light=new THREE.SpotLight(0xffffff, 0.5);
+    light.position.set(30,50,30);
+    light.target.position.set(10, 100, 0); 
+    scene.add(light);
+    
+    //LUZ 4
+    var light=new THREE.SpotLight(0xffffff, 0.5);
+    light.position.set(-30,50,-30);
+    light.target.position.set(10, 100, 0); 
+    scene.add(light);
+
+     // LUZ 5
+     var luzFrontal = new THREE.DirectionalLight(0xffffff, 0.5);
+    luzFrontal.position.set(0, 100, 100);
+    luzFrontal.target.position.set(10, 100, 0); 
+    scene.add(luzFrontal);
+    scene.add(luzFrontal.target);
+
+    // LUZ 6
+    var luzTrasera = new THREE.DirectionalLight(0xffffff, 0.5);
+    luzTrasera.position.set(0, 100, -100); 
+    luzTrasera.target.position.set(-10, 100, 0);
+    scene.add(luzTrasera); 
+    scene.add(luzTrasera.target);
+
+    // AGRUPAR LA PIÑATA
+    var piñata = new THREE.Group();
+
+    // ESFERA
+    var geometriaEsfera = new THREE.SphereGeometry(5);
+    var texturaEsfera = new THREE.TextureLoader().load("./assets/pinata.jpg");
+    texturaEsfera.wrapS = THREE.RepeatWrapping;
+    texturaEsfera.wrapT = THREE.RepeatWrapping;
+    texturaEsfera.repeat.set(1, 1);
+    var materialEsfera = new THREE.MeshLambertMaterial({ map: texturaEsfera });
+    var mallaEsfera = new THREE.Mesh(geometriaEsfera, materialEsfera);
+    piñata.add(mallaEsfera);
+    mallaEsfera.position.set(0, 0, 0);
+
+    // AGRUPAR PICO Y DECORACIÓN
+    var grupoPico1 = new THREE.Group();
+
+    // PICO 1
+    var geometriaPico1 = new THREE.CylinderGeometry(0, 2.5, 10, 50);
+    var texturaPico1 = new THREE.TextureLoader().load("./assets/lineas.jpg");
+    texturaPico1.wrapS = THREE.RepeatWrapping;
+    texturaPico1.wrapT = THREE.RepeatWrapping;
+    texturaPico1.repeat.set(4, 1);
+    var materialPico1 = new THREE.MeshLambertMaterial({ map: texturaPico1 });
+    var mallaPico1 = new THREE.Mesh(geometriaPico1, materialPico1);
+    mallaPico1.position.set(0, 9, 0);
+
+    // DECORACIÓN PICO 1
+    var geometriaDecoracionPico1 = new THREE.CylinderGeometry(1.6, 2.5, 3, 50);
+    var texturaDecoracionPico1 = new THREE.TextureLoader().load("./assets/esfera2.jpg");
+    var materialDecoracionPico1 = new THREE.MeshLambertMaterial({ map: texturaDecoracionPico1 });
+    var mallaDecoracionPico1 = new THREE.Mesh(geometriaDecoracionPico1, materialDecoracionPico1);
+    mallaDecoracionPico1.position.set(0, 5.8, 0);
+
+    // Añadir los picos al grupo de la piñata
+    grupoPico1.add(mallaPico1, mallaDecoracionPico1);
+    piñata.add(grupoPico1);
+
+    // PICO 2
+    var pico2Clon = grupoPico1.clone();
+    pico2Clon.rotation.z = THREE.MathUtils.degToRad(72);
+
+    // PICO 3
+    var pico3Clon = grupoPico1.clone();
+    pico3Clon.rotation.z = THREE.MathUtils.degToRad(144);
+
+    // PICO 4
+    var pico4Clon = grupoPico1.clone();
+    pico4Clon.rotation.z = THREE.MathUtils.degToRad(216);
+
+    // PICO 5
+    var pico5Clon = grupoPico1.clone();
+    pico5Clon.rotation.z = THREE.MathUtils.degToRad(288);
+
+    // PICO 6
+    var pico6Clon = grupoPico1.clone();
+    pico6Clon.rotation.x = THREE.MathUtils.degToRad(90);
+
+    // PICO 7
+    var pico7Clon = grupoPico1.clone();
+    pico7Clon.rotation.x = THREE.MathUtils.degToRad(-90);
+
+    // Añadir la piñata completa a la escena
+    piñata.add(pico2Clon, pico3Clon, pico4Clon, pico5Clon,  pico6Clon, pico7Clon);
+    scene.add(piñata);
+    piñata.rotation.z = THREE.MathUtils.degToRad(110);
+
+    // PAPEL
+    var geometry = new THREE.CapsuleGeometry(0.1, 7, 4, 11);
+    var texturaPapel = new THREE.TextureLoader().load("./assets/estrella.jpg");
+    var material = new THREE.MeshLambertMaterial({ map: texturaPapel });
+
+    // Crear un grupo
+    var grupoPapel = new THREE.Group();
+
+    var papel1 = new THREE.Mesh(geometry, material);
+    papel1.position.set(0, 10, 0);
+    papel1.rotation.z = THREE.MathUtils.degToRad(0);
+
+    var papel2 = new THREE.Mesh(geometry, material);
+    papel2.position.set(-0.4, 10, 0);
+    papel2.rotation.z = THREE.MathUtils.degToRad(-7);
+
+    var papel3 = new THREE.Mesh(geometry, material);
+    papel3.position.set(0.4, 10, 0);
+    papel3.rotation.z = THREE.MathUtils.degToRad(7);
+
+    var papel4 = new THREE.Mesh(geometry, material);
+    papel4.position.set(0, 10, -0.4);
+    papel4.rotation.x = THREE.MathUtils.degToRad(7);
+
+    var papel5 = new THREE.Mesh(geometry, material);
+    papel5.position.set(0, 10, 0.4);
+    papel5.rotation.x = THREE.MathUtils.degToRad(-7);
+
+    // Añadir el grupo a la escena
+    grupoPapel.add(papel1, papel2, papel3, papel4, papel5);
+    scene.add(grupoPapel);
+
+    //Repetir Grupo 
+
+    var grupoPapeles = new THREE.Group();
+
+    var papelClon1 = grupoPapel.clone();
+    papelClon1.position.set(0, 0, 0); // Posición diferente para evitar superposición
+    papelClon1.rotation.y = THREE.MathUtils.degToRad(300); // Rotación en el eje Y
+    scene.add(papelClon1);
+
+    var papelClon2 = grupoPapel.clone();
+    papelClon2.position.set(0, 0, 0); // Posición diferente para evitar superposición
+    papelClon2.rotation.y = THREE.MathUtils.degToRad(600); // Rotación en el eje Y
+    scene.add(papelClon2);
+
+    grupoPapeles.add(grupoPapel, papelClon1, papelClon2);
+    scene.add(grupoPapeles);
+    scene.remove(grupoPapeles);
+
+    //CLONES PAPEL
+
+    // Clon 1
+    var papel11 = grupoPapeles.clone();
+    papel11.position.set(-8.6, -2.6, 0);
+    papel11.rotation.y = THREE.MathUtils.degToRad(-100);
+    scene.add(papel11);
+
+    // Clon 2
+    var papel22 = grupoPapeles.clone();
+    papel22.position.set(-13, -18.3, 0);
+    scene.add(papel22);
+
+    // Clon 3
+    var papel33 = grupoPapeles.clone();
+    papel33.position.set(0.45, -27.3, 0);
+    scene.add(papel33);
+
+    // Clon 4
+    var papel44 = grupoPapeles.clone();
+    papel44.position.set(13.3, -17.4, 0); // Cambiar posición
+    scene.add(papel44);
+
+    // Clon 5
+    var papel55 = grupoPapeles.clone();
+    papel55.position.set(7.8, -2, 0); // Cambiar posición
+    scene.add(papel55);
+
+    // Clon 6
+    var papel66 = grupoPapeles.clone();
+    papel66.position.set(0, -13.5, 13.8); // Cambiar posición
+    scene.add(papel66);
+
+    // Clon 7
+    var papel77 = grupoPapeles.clone();
+    papel77.position.set(0, -13.5, -13.8); // Cambiar posición
+    scene.add(papel77);
+
+
+      //🎰🎰Rendering y animación
+      requestAnimationFrame(render);
+      function render() {
+
+      //🪄🪄 Animación
+
+      controls.update();
+
+      //Llamado para renderizar y volver a llamar a la misma función (render)
+      renderer.render(scene, camera);
+      requestAnimationFrame(render);
+      }
+</script>
+</body>
+</html>

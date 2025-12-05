@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>MUÑECO DE NIEVE ⛄</title>
+<link rel="icon" type="image/png" href="./assets/favicon.png"/>
+<style>
+
+body { margin: 0; overflow: hidden; }
+</style>
+</head>
+<body>
+<canvas id="myCanvas">
+</canvas>
+<script type="importmap">
+{
+"imports":{
+"three": "./js/three.module.js",
+"three/OrbitControls": "./js/OrbitControls.js"
+}
+}
+</script>
+<script type="module">
+
+//👉🏽 Mandar llamar a la librería
+
+import {RoundedBoxGeometry} from './js/RoundedBoxGeometry.js';
+import * as THREE from 'three';
+import {OrbitControls} from 'three/OrbitControls';
+console.log(OrbitControls);
+
+var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('myCanvas'),antialias: true});
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0xADD8E6); // COLOR DE FONDO (Cielo azul claro)
+
+
+//🎬 nueva escena
+var scene = new THREE.Scene();
+//cámara de perspectiva
+var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 5000);
+scene.add(camera);
+
+// 
+const sizes = {
+width: window.innerWidth,
+height: window.innerHeight,
+};
+const canvas = document.getElementById('myCanvas');
+window.addEventListener('resize', () => {
+sizes.width = window.innerWidth;
+sizes.height = window.innerHeight;
+camera.aspect = sizes.width / sizes.height;
+camera.updateProjectionMatrix();
+renderer.setSize(sizes.width, sizes.height);
+});
+
+
+
+//👉🏽Settings de la cámara
+camera.position.set(0, 10, 20); // Posición inicial más cerca y centrada
+
+//👉🏽Añadiendo los OrbitControls
+var controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.target.set(0, 10, 0); // Apuntar al centro del muñeco
+controls.update();
+
+// 🪄🪄 SECCIÓN DE CÓDIGO DEL MUÑECO DE NIEVE 🪄🪄
+
+//LUZ
+var luzAmbiental = new THREE.AmbientLight(0xffffff, 0.5); // Luz suave
+scene.add(luzAmbiental);
+var luzDireccional = new THREE.DirectionalLight(0xffffff, 0.7); // Luz principal
+luzDireccional.position.set(10, 20, 10);
+scene.add(luzDireccional);
+
+
+// MATERIALES
+
+var materialNieve = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Blanco
+var materialNegro = new THREE.MeshLambertMaterial({ color: 0x000000 }); // Negro
+var materialNaranja = new THREE.MeshLambertMaterial({ color: 0xFFA500 }); // Naranja (Nariz)
+var materialRojo = new THREE.MeshLambertMaterial({ color: 0xFF0000 }); // Rojo (Bufanda)
+var materialRama = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Café (Brazos)
+
+
+// AGRUPAR EL MUÑECO DE NIEVE
+var snowMan = new THREE.Group();
+
+// --- CUERPO ---
+// 
+var geometriaCuerpo = new THREE.SphereGeometry(4, 32, 32);
+var mallaCuerpo = new THREE.Mesh(geometriaCuerpo, materialNieve);
+mallaCuerpo.position.set(0, 4, 0);
+snowMan.add(mallaCuerpo);
+
+
+// Pecho 
+var geometriaPecho = new THREE.SphereGeometry(3, 32, 32);
+var mallaPecho = new THREE.Mesh(geometriaPecho, materialNieve);
+mallaPecho.position.set(0, 11, 0);
+snowMan.add(mallaPecho);
+
+// Cabeza (Esfera superior)
+var geometriaCabeza = new THREE.SphereGeometry(2, 32, 32);
+var mallaCabeza = new THREE.Mesh(geometriaCabeza, materialNieve);
+mallaCabeza.position.set(0, 16, 0);
+snowMan.add(mallaCabeza);
+
+
+
+// --- FACIALES ---
+
+// Ojos
+var geometriaOjo = new THREE.SphereGeometry(0.2, 16, 16);
+var ojoIzquierdo = new THREE.Mesh(geometriaOjo, materialNegro);
+ojoIzquierdo.position.set(-0.8, 17, 1.8);
+snowMan.add(ojoIzquierdo);
+
+
+var ojoDerecho = new THREE.Mesh(geometriaOjo, materialNegro);
+ojoDerecho.position.set(0.8, 17, 1.8);
+snowMan.add(ojoDerecho);
+
+
+
+
+// Nariz
+var geometriaNariz = new THREE.ConeGeometry(0.5, 2, 32);
+var mallaNariz = new THREE.Mesh(geometriaNariz, materialNaranja);
+mallaNariz.rotation.x = THREE.MathUtils.degToRad(90);
+mallaNariz.position.set(0, 16.5, 2.5);
+snowMan.add(mallaNariz);
+
+
+
+
+
+// --- ACCESORIOS ---
+// Botones
+var geometriaBoton = new THREE.SphereGeometry(0.3, 16, 16);
+var boton1 = new THREE.Mesh(geometriaBoton, materialNegro);
+boton1.position.set(0, 12.5, 2.8);
+snowMan.add(boton1);
+var boton2 = new THREE.Mesh(geometriaBoton, materialNegro);
+boton2.position.set(0, 11, 3);
+snowMan.add(boton2);
+
+var boton3 = new THREE.Mesh(geometriaBoton, materialNegro);
+boton3.position.set(0, 9.5, 2.8);
+snowMan.add(boton3);
+
+
+// Sombrero
+var geometriaBaseSombrero = new THREE.CylinderGeometry(2.5, 2.5, 0.5, 32);
+var baseSombrero = new THREE.Mesh(geometriaBaseSombrero, materialNegro);
+baseSombrero.position.set(0, 18, 0);
+snowMan.add(baseSombrero);
+var geometriaCopaSombrero = new THREE.CylinderGeometry(1.5, 1.5, 3, 32);
+var copaSombrero = new THREE.Mesh(geometriaCopaSombrero, materialNegro);
+copaSombrero.position.set(0, 19.75, 0);
+snowMan.add(copaSombrero);
+
+
+
+// Bufanda
+var geometriaBufanda = new THREE.CylinderGeometry(2.2, 2.2, 1, 32);
+var bufanda = new THREE.Mesh(geometriaBufanda, materialRojo);
+bufanda.position.set(0, 13.5, 0);
+snowMan.add(bufanda);
+var geometriaColaBufanda = new THREE.BoxGeometry(0.5, 3, 0.1);
+var colaBufanda = new THREE.Mesh(geometriaColaBufanda, materialRojo);
+colaBufanda.rotation.y = THREE.MathUtils.degToRad(15);
+colaBufanda.position.set(2, 12, 0);
+snowMan.add(colaBufanda);
+
+
+
+// Brazos (Ramas)
+var geometriaBrazo = new THREE.CylinderGeometry(0.2, 0.2, 5, 16);
+
+// Brazo Izquierdo
+var brazoIzquierdo = new THREE.Mesh(geometriaBrazo, materialRama);
+brazoIzquierdo.rotation.z = THREE.MathUtils.degToRad(45);
+brazoIzquierdo.position.set(-4, 11, 0);
+snowMan.add(brazoIzquierdo);
+
+
+// Brazo Derecho
+var brazoDerecho = new THREE.Mesh(geometriaBrazo, materialRama);
+brazoDerecho.rotation.z = THREE.MathUtils.degToRad(-45);
+brazoDerecho.position.set(4, 11, 0);
+snowMan.add(brazoDerecho);
+
+
+
+
+
+// Suelo de nieve
+var geometriaSuelo = new THREE.BoxGeometry(50, 0.5, 50);
+var mallaSuelo = new THREE.Mesh(geometriaSuelo, materialNieve);
+mallaSuelo.position.set(0, 0, 0);
+scene.add(mallaSuelo);
+
+
+// Añadir el muñeco de nieve completo a la escena
+scene.add(snowMan);
+
+
+
+//🎰🎰Rendering y animación
+requestAnimationFrame(render);
+function render() {
+
+
+//🪄🪄 Animación
+// snowMan.rotation.y += 0.005; // Descomentar para que rote lentamente
+
+
+controls.update();
+//Llamado para renderizar y volver a llamar a la misma función (render)
+renderer.render(scene, camera);
+requestAnimationFrame(render);
+}
+
+</script>
+</body>
+</html> 

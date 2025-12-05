@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>🎄 NAVIDAD - INICIO 🎁</title>
+    <link rel="icon" type="image/png" href="./assets/favicon.png" />
+    <!-- Tipografía navideña -->
+    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Mountains of Christmas", cursive;
+            /* Removed background image to show canvas */
+            /* background: url("./assets/fondo.jpg") center/cover no-repeat; */
+            overflow: hidden;
+            /* Prevent scrollbars */
+            height: 100vh;
+            width: 100vw;
+            color: #fff;
+        }
+
+        /* Canvas for 3D scene */
+        #myCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            /* Behind the UI */
+            display: block;
+        }
+
+        /* UI Overlay Container */
+        .ui-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            /* Let clicks pass through to canvas if needed, but buttons need pointer-events: auto */
+        }
+
+        .pantalla {
+            background: rgba(255, 0, 0, 0.71);
+            padding: 45px 65px;
+            border-radius: 25px;
+            border: 3px solid #fff;
+            backdrop-filter: blur(5px);
+            text-align: center;
+            pointer-events: auto;
+            /* Enable interaction with the panel */
+        }
+
+        .tituloPrincipal {
+            font-size: 70px;
+            font-weight: 700;
+            text-shadow: 3px 3px 12px #008000;
+            margin: 0;
+        }
+
+        .subtitulo {
+            font-size: 28px;
+            letter-spacing: 2px;
+            color: #ffdf6e;
+        }
+
+        .instrucciones {
+            font-size: 24px;
+            /* Adjusted for better fit */
+            line-height: 1.5;
+        }
+
+        .botonAnimado {
+            margin-top: 45px;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 18px;
+            font-size: 30px;
+            cursor: pointer;
+            background: #ff2b2b;
+            color: white;
+            box-shadow: 0 0 15px #ff0000;
+            transition: 0.25s ease-in-out;
+            font-family: "Mountains of Christmas", cursive;
+        }
+
+        .botonAnimado:hover {
+            transform: scale(1.08);
+            background: #ff6a6a;
+            box-shadow: 0 0 25px #ff3b3b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 3D Scene Canvas -->
+    <canvas id="myCanvas"></canvas>
+
+    <!-- UI Overlay -->
+    <div class="ui-container">
+        <div class="pantalla">
+            <h1 class="tituloPrincipal">🎅 NAVIDAD 🎄</h1>
+            <span class="subtitulo">EL VIDEOJUEGO</span><br>
+
+            <div class="instrucciones">
+                ✅ Recoge 10 regalos para ganar 🎁<br>
+                ❌ Evita golpear 5 piñatas 🎉<br>
+                ⌨️ Muévete con las flechas ← ↑ ↓ →<br>
+                ⭐ ¡Corre, esquiva y salva la Navidad!
+            </div>
+
+            <button class="botonAnimado" id="btnIniciar">INICIAR</button>
+        </div>
+    </div>
+
+    <audio id="audioBurbuja" src="audio/burbuja.mp3" preload="auto"></audio>
+
+    <!-- Import Map for Three.js -->
+    <script type="importmap">
+    {
+        "imports":{
+            "three": "./js/three.module.js",
+            "three/OrbitControls": "./js/OrbitControls.js" 
+        }
+    }
+    </script>
+
+    <!-- 3D Scene Logic -->
+    <script type="module">
+        import { RoundedBoxGeometry } from './js/RoundedBoxGeometry.js';
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/OrbitControls';
+
+        // UI Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const burbuja = document.getElementById('audioBurbuja');
+            document.getElementById('btnIniciar').addEventListener('click', () => {
+                burbuja.play();
+                setTimeout(() => window.location.href = 'base.html', 300);
+            });
+        });
+
+        // --- 3D SCENE SETUP ---
+        var renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('myCanvas'), antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x2c3e50); // Dark blue background
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        var scene = new THREE.Scene();
+
+        var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 5000);
+        scene.add(camera);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        camera.position.set(0, 7, 25);
+
+        var controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 50;
+        controls.minDistance = 10;
+        controls.target.set(0, 4, -10);
+
+        // --- MATERIALS ---
+        var materialRojoPrincipal = new THREE.MeshPhongMaterial({ color: 0x8b0000, specular: 0xcccccc, shininess: 50 });
+        var materialRojoAcolchado = new THREE.MeshPhongMaterial({ color: 0xc43232, specular: 0xdddddd, shininess: 60 });
+        var materialDorado = new THREE.MeshPhongMaterial({ color: 0xffd700, specular: 0xffffff, shininess: 100 });
+        var materialGrisMetalico = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, specular: 0xeeeeee, shininess: 80 });
+        var materialCafeReno = new THREE.MeshPhongMaterial({ color: 0x6b3e1f, specular: 0x331e0f, shininess: 20 });
+        var materialNarizReno = new THREE.MeshBasicMaterial({ color: 0xff4500 });
+        var materialCuernos = new THREE.MeshLambertMaterial({ color: 0xa0522d });
+        var materialBlancoNieve = new THREE.MeshLambertMaterial({ color: 0xf8f8f8 });
+        var materialPielBlanca = new THREE.MeshPhongMaterial({ color: 0xf0f0f0, specular: 0xffffff, shininess: 30 });
+        var materialPielRosa = new THREE.MeshPhongMaterial({ color: 0xffcc99, specular: 0xffe0bd, shininess: 20 });
+        var materialOjos = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        var materialBoca = new THREE.MeshLambertMaterial({ color: 0x880000 });
+        var materialCordon = new THREE.MeshLambertMaterial({ color: 0x222222 });
+        var materialRegaloVerde = new THREE.MeshLambertMaterial({ color: 0x2ecc71 });
+        var materialRegaloAzul = new THREE.MeshLambertMaterial({ color: 0x3498db });
+        var materialRegaloAmarillo = new THREE.MeshLambertMaterial({ color: 0xf1c40f });
+        var materialRegaloMorado = new THREE.MeshLambertMaterial({ color: 0x9b59b6 });
+        var materialSacoMarron = new THREE.MeshLambertMaterial({ color: 0x8b4513 });
+        var materialListon = new THREE.MeshLambertMaterial({ color: 0xffa07a });
+        var materialPezuñas = new THREE.MeshLambertMaterial({ color: 0x333333 });
+
+        // --- LIGHTING ---
+        var luzHemisferica = new THREE.HemisphereLight(0xadd8e6, 0x112233, 0.6);
+        scene.add(luzHemisferica);
+
+        var luzPrincipal = new THREE.DirectionalLight(0xffffff, 0.8);
+        luzPrincipal.position.set(10, 20, 10);
+        luzPrincipal.castShadow = true;
+        luzPrincipal.shadow.mapSize.width = 1024;
+        luzPrincipal.shadow.mapSize.height = 1024;
+        scene.add(luzPrincipal);
+
+        var luzTrasera = new THREE.DirectionalLight(0xadd8e6, 0.3);
+        luzTrasera.position.set(-10, 10, -10);
+        scene.add(luzTrasera);
+
+        var luzRudolph = new THREE.SpotLight(0xff4500, 3, 20, Math.PI / 10, 0.5);
+        scene.add(luzRudolph);
+
+        // --- STARS ---
+        const starGeometry = new THREE.BufferGeometry();
+        const starMaterial = new THREE.PointsMaterial({
+            color: 0xaaaaaa,
+            size: 0.1,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            sizeAttenuation: true
+        });
+
+        const starVertices = [];
+        for (let i = 0; i < 5000; i++) {
+            const x = (Math.random() - 0.5) * 200;
+            const y = (Math.random() - 0.5) * 200;
+            const z = (Math.random() - 0.5) * 200;
+            starVertices.push(x, y, z);
+        }
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+
+        // --- SNOW FLOOR ---
+        var geometriaNieve = new THREE.PlaneGeometry(100, 100);
+        var mallaNieve = new THREE.Mesh(geometriaNieve, materialBlancoNieve);
+        mallaNieve.rotation.x = THREE.MathUtils.degToRad(-90);
+        mallaNieve.position.y = -1;
+        mallaNieve.receiveShadow = true;
+        scene.add(mallaNieve);
+
+        // --- SLEIGH ---
+        var trineo = new THREE.Group();
+        trineo.rotation.y = THREE.MathUtils.degToRad(90);
+
+        var geometriaBaseInferior = new THREE.BoxGeometry(8, 2, 4);
+        var mallaBaseInferior = new THREE.Mesh(geometriaBaseInferior, materialRojoPrincipal);
+        mallaBaseInferior.position.set(0, 2.5, 0);
+        mallaBaseInferior.castShadow = true;
+        trineo.add(mallaBaseInferior);
+
+        var geometriaBaseSuperior = new THREE.BoxGeometry(7.5, 1.5, 3.5);
+        var mallaBaseSuperior = new THREE.Mesh(geometriaBaseSuperior, materialRojoPrincipal);
+        mallaBaseSuperior.position.set(0, 3.5, 0);
+        mallaBaseSuperior.castShadow = true;
+        trineo.add(mallaBaseSuperior);
+
+        var geometriaBorde = new THREE.TorusGeometry(3.9, 0.08, 8, 50, Math.PI * 2);
+        var mallaBorde = new THREE.Mesh(geometriaBorde, materialDorado);
+        mallaBorde.rotation.x = THREE.MathUtils.degToRad(90);
+        mallaBorde.scale.set(7.8 / (3.9 * 2), 3.8 / (3.9 * 2), 1);
+        mallaBorde.position.set(0, 3.7, 0);
+        trineo.add(mallaBorde);
+
+        var geometriaAsiento = new RoundedBoxGeometry(6.5, 0.8, 3, 0.3, 6);
+        var mallaAsiento = new THREE.Mesh(geometriaAsiento, materialRojoAcolchado);
+        mallaAsiento.position.set(0, 4.2, 0);
+        mallaAsiento.castShadow = true;
+        trineo.add(mallaAsiento);
+
+        var geometriaRespaldoPiel = new RoundedBoxGeometry(1.0, 2.8, 3.2, 0.5, 6);
+        var mallaRespaldoPiel = new THREE.Mesh(geometriaRespaldoPiel, materialPielBlanca);
+        mallaRespaldoPiel.position.set(-3.5, 5.5, 0);
+        mallaRespaldoPiel.castShadow = true;
+        trineo.add(mallaRespaldoPiel);
+
+        var geometriaPatinCilindro = new THREE.CylinderGeometry(0.3, 0.3, 10, 16);
+        function crearPatinCilindrico(z_offset) {
+            var mallaPatin = new THREE.Mesh(geometriaPatinCilindro, materialGrisMetalico);
+            mallaPatin.rotation.z = THREE.MathUtils.degToRad(90);
+            mallaPatin.position.set(0, 0.5, z_offset);
+            mallaPatin.castShadow = true;
+            return mallaPatin;
+        }
+        trineo.add(crearPatinCilindrico(2.2));
+        trineo.add(crearPatinCilindrico(-2.2));
+
+        // --- GIFT SACK ---
+        var saco = new THREE.Group();
+        var geometriaSaco = new THREE.CylinderGeometry(1.5, 2, 4, 32);
+        var mallaSaco = new THREE.Mesh(geometriaSaco, materialSacoMarron);
+        mallaSaco.castShadow = true;
+        saco.add(mallaSaco);
+
+        var geometriaNieveSaco = new THREE.SphereGeometry(2.2, 16, 8, 0, Math.PI * 2, 0, Math.PI / 4);
+        var mallaNieveSaco = new THREE.Mesh(geometriaNieveSaco, materialBlancoNieve);
+        mallaNieveSaco.position.y = -1.5;
+        mallaNieveSaco.scale.y = 0.5;
+        saco.add(mallaNieveSaco);
+
+        var geomCajaPeque = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        var geomCajaMedia = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+        var geomCilindroPeque = new THREE.CylinderGeometry(0.5, 0.5, 1, 16);
+        var geomCajaGrande = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+
+        function crearRegalo(geometry, material, x, y, z, rotX, rotY, rotZ, conListon = false) {
+            var regalo = new THREE.Mesh(geometry, material);
+            regalo.position.set(x, y, z);
+            regalo.rotation.set(rotX, rotY, rotZ);
+            regalo.castShadow = true;
+            saco.add(regalo);
+
+            if (conListon) {
+                var listonVert = new THREE.Mesh(new THREE.BoxGeometry(geometry.parameters.width * 1.05, 0.15, 0.15), materialListon);
+                listonVert.position.set(x, y, z);
+                listonVert.rotation.copy(regalo.rotation);
+                saco.add(listonVert);
+
+                var listonHoriz = new THREE.Mesh(new THREE.BoxGeometry(0.15, geometry.parameters.height * 1.05, 0.15), materialListon);
+                listonHoriz.position.set(x, y, z);
+                listonHoriz.rotation.copy(regalo.rotation);
+                saco.add(listonHoriz);
+            }
+        }
+
+        crearRegalo(geomCajaMedia, materialRegaloVerde, 0.5, 3.2, 0.8, 0.2, 0.5, 0.1, true);
+        crearRegalo(geomCajaPeque, materialRegaloAzul, -0.8, 2.9, -0.6, -0.1, 0.8, 0.3, true);
+        crearRegalo(geomCilindroPeque, materialRegaloAmarillo, 1.2, 3.0, -0.2, 0.5, -0.3, 0.4);
+        crearRegalo(geomCajaPeque, materialRegaloMorado, 0.1, 2.5, -1.0, -0.3, -0.6, 0.2, true);
+        crearRegalo(geomCajaPeque, materialRojoPrincipal, -1.0, 2.7, 0.9, 0.1, 0.9, -0.2);
+        crearRegalo(geomCajaGrande, materialRegaloAzul, -0.5, 2.5, 0.0, 0, 0, 0);
+
+        saco.position.set(-2, 5.5, 0);
+        trineo.add(saco);
+        scene.add(trineo);
+
+        // --- SANTA CLAUS ---
+        var personaje = new THREE.Group();
+        scene.add(personaje);
+
+        var cabeza = new THREE.Mesh(new THREE.SphereGeometry(6), materialPielRosa);
+        cabeza.position.set(0, 23, 0);
+        cabeza.castShadow = true;
+        personaje.add(cabeza);
+
+        var barriga = new THREE.Mesh(new THREE.SphereGeometry(10), materialRojoPrincipal);
+        barriga.position.set(0, 10, 0);
+        barriga.castShadow = true;
+        personaje.add(barriga);
+
+        var sombrero = new THREE.Mesh(new THREE.CylinderGeometry(0, 4.5, 8, 50), materialRojoPrincipal);
+        sombrero.position.set(0, 32, 0);
+        sombrero.rotation.y = 3;
+        sombrero.castShadow = true;
+        personaje.add(sombrero);
+
+        var pompon = new THREE.Mesh(new THREE.SphereGeometry(1), materialBlancoNieve);
+        pompon.position.set(0, 36, 0);
+        pompon.castShadow = true;
+        personaje.add(pompon);
+
+        var baseSombrero = new THREE.Mesh(new THREE.CylinderGeometry(4, 4.5, 1, 50), materialBlancoNieve);
+        baseSombrero.position.set(0, 28.6, 0);
+        baseSombrero.castShadow = true;
+        personaje.add(baseSombrero);
+
+        var baseSombreroRoja = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 1, 50), new THREE.MeshLambertMaterial({ color: 0xcc0000 }));
+        baseSombreroRoja.position.set(0, 27.5, 0);
+        baseSombreroRoja.castShadow = true;
+        personaje.add(baseSombreroRoja);
+
+        var pelo = new THREE.Mesh(new THREE.CylinderGeometry(5.3, 5.3, 2, 50), materialBlancoNieve);
+        pelo.position.set(0, 26, 0);
+        pelo.castShadow = true;
+        personaje.add(pelo);
+
+        var barba = new THREE.Mesh(new THREE.SphereGeometry(5), materialBlancoNieve);
+        barba.position.set(0, 20, 2);
+        barba.castShadow = true;
+        personaje.add(barba);
+
+        var ojoMaterial = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+        var ojoIzquierdo = new THREE.Mesh(new THREE.SphereGeometry(1.1), ojoMaterial);
+        ojoIzquierdo.position.set(-1.1, 24.1, 5);
+        personaje.add(ojoIzquierdo);
+
+        var ojoDerecho = new THREE.Mesh(new THREE.SphereGeometry(1.1), ojoMaterial);
+        ojoDerecho.position.set(1.1, 24.1, 5);
+        personaje.add(ojoDerecho);
+
+        var materialPupila = new THREE.MeshLambertMaterial({ color: 0x000000 });
+        var pupilaIzquierda = new THREE.Mesh(new THREE.SphereGeometry(0.6), materialPupila);
+        pupilaIzquierda.position.set(-1.2, 24.3, 5.7);
+        personaje.add(pupilaIzquierda);
+
+        var pupilaDerecha = new THREE.Mesh(new THREE.SphereGeometry(0.6), materialPupila);
+        pupilaDerecha.position.set(1.2, 24.3, 5.7);
+        personaje.add(pupilaDerecha);
+
+        var matBrillo = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+        function brillo(x, y, z, size) {
+            var b = new THREE.Mesh(new THREE.SphereGeometry(size), matBrillo);
+            b.position.set(x, y, z);
+            personaje.add(b);
+        }
+        brillo(-1.3, 24.3, 6.15, 0.16);
+        brillo(-1.4, 24.5, 6.0, 0.24);
+        brillo(1.3, 24.3, 6.15, 0.16);
+        brillo(1.4, 24.5, 6.0, 0.24);
+
+        var nariz = new THREE.Mesh(new THREE.CapsuleGeometry(0.6, 0.4, 8, 8), materialPielRosa);
+        nariz.position.set(0, 22.9, 6);
+        personaje.add(nariz);
+
+        var boca = new THREE.Mesh(new THREE.SphereGeometry(0.6), materialBoca);
+        boca.position.set(0, 21.5, 6.4);
+        personaje.add(boca);
+
+        var matMejilla = new THREE.MeshLambertMaterial({ color: 0xffa07a });
+        var mejillaIzq = new THREE.Mesh(new THREE.SphereGeometry(0.7), matMejilla);
+        mejillaIzq.position.set(-2.6, 22.4, 4.8);
+        personaje.add(mejillaIzq);
+        var mejillaDer = new THREE.Mesh(new THREE.SphereGeometry(0.7), matMejilla);
+        mejillaDer.position.set(2.6, 22.4, 4.8);
+        personaje.add(mejillaDer);
+
+        function boton(y, z, size) {
+            var b = new THREE.Mesh(new THREE.SphereGeometry(size), materialBlancoNieve);
+            b.position.set(0, y, z);
+            personaje.add(b);
+        }
+        boton(15.5, 8, 0.7);
+        boton(13.5, 8.9, 0.8);
+        boton(11.4, 9.4, 0.9);
+
+        var materialCinturon = new THREE.MeshLambertMaterial({ color: 0x333333 });
+        var meshCinturon = new THREE.Mesh(new THREE.CylinderGeometry(10.2, 9.8, 2, 50), materialCinturon);
+        meshCinturon.position.set(0, 8, 0);
+        meshCinturon.castShadow = true;
+        personaje.add(meshCinturon);
+
+        var meshEvillaNegra = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), new THREE.MeshLambertMaterial({ color: 0x000000 }));
+        meshEvillaNegra.position.set(0, 8, 8.9);
+        personaje.add(meshEvillaNegra);
+
+        var meshEvillaRoja = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshLambertMaterial({ color: 0x8b0000 }));
+        meshEvillaRoja.position.set(0, 8, 9.5);
+        personaje.add(meshEvillaRoja);
+
+        var matBrazo = new THREE.MeshLambertMaterial({ color: 0x8b0000 });
+        var brazoIzq = new THREE.Mesh(new THREE.CylinderGeometry(1, 3, 8, 32), matBrazo);
+        brazoIzq.position.set(-9, 15, 0);
+        brazoIzq.rotation.z = 1.2;
+        brazoIzq.castShadow = true;
+        personaje.add(brazoIzq);
+
+        var contornoBrazoIzq = new THREE.Mesh(new THREE.CylinderGeometry(1, 2, 1, 50), materialBlancoNieve);
+        contornoBrazoIzq.position.set(-13.15, 16.65, 0);
+        contornoBrazoIzq.rotation.z = 4.34;
+        personaje.add(contornoBrazoIzq);
+
+        var manoIzq = new THREE.Mesh(new RoundedBoxGeometry(2.8, 4, 1.9, 5, 10), materialPielRosa);
+        manoIzq.position.set(-14.7, 17.2, 0);
+        manoIzq.rotation.z = 4.34;
+        personaje.add(manoIzq);
+
+        var dedoIzq = new THREE.Mesh(new RoundedBoxGeometry(1.3, 3, 1.3, 5, 10), materialPielRosa);
+        dedoIzq.position.set(-13.7, 17.9, 0);
+        dedoIzq.rotation.y = 5;
+        personaje.add(dedoIzq);
+
+        var brazoDer = new THREE.Mesh(new THREE.CylinderGeometry(1, 3, 8, 32), matBrazo);
+        brazoDer.position.set(9, 15, 0);
+        brazoDer.rotation.z = -1.2;
+        brazoDer.castShadow = true;
+        personaje.add(brazoDer);
+
+        var contornoBrazoDer = new THREE.Mesh(new THREE.CylinderGeometry(1, 2, 1, 50), materialBlancoNieve);
+        contornoBrazoDer.position.set(13.15, 16.65, 0);
+        contornoBrazoDer.rotation.z = -4.34;
+        personaje.add(contornoBrazoDer);
+
+        var manoDer = new THREE.Mesh(new RoundedBoxGeometry(2.8, 4, 1.9, 5, 10), materialPielRosa);
+        manoDer.position.set(14.7, 17.2, 0);
+        manoDer.rotation.z = -4.34;
+        personaje.add(manoDer);
+
+        var dedoDer = new THREE.Mesh(new RoundedBoxGeometry(1.3, 3, 1.3, 5, 10), materialPielRosa);
+        dedoDer.position.set(13.7, 17.9, 0);
+        dedoDer.rotation.y = -5;
+        personaje.add(dedoDer);
+
+        var piernaIzq = new THREE.Mesh(new THREE.CylinderGeometry(1, 3, 8, 32), matBrazo);
+        piernaIzq.position.set(-3, -2, 0);
+        piernaIzq.rotation.x = 3.13;
+        piernaIzq.castShadow = true;
+        personaje.add(piernaIzq);
+
+        var calcetinIzq = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 1, 50), materialBlancoNieve);
+        calcetinIzq.position.set(-3, -4.3, 0);
+        personaje.add(calcetinIzq);
+
+        var zapatoIzq = new THREE.Mesh(new THREE.CapsuleGeometry(2.5, 3, 30, 30), materialCordon);
+        zapatoIzq.position.set(-3, -7, 0);
+        zapatoIzq.rotation.x = Math.PI / 2;
+        personaje.add(zapatoIzq);
+
+        var piernaDer = new THREE.Mesh(new THREE.CylinderGeometry(1, 3, 8, 32), matBrazo);
+        piernaDer.position.set(3, -2, 0);
+        piernaDer.rotation.x = 3.13;
+        piernaDer.castShadow = true;
+        personaje.add(piernaDer);
+
+        var calcetinDer = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 1, 50), materialBlancoNieve);
+        calcetinDer.position.set(3, -4.3, 0);
+        personaje.add(calcetinDer);
+
+        var zapatoDer = new THREE.Mesh(new THREE.CapsuleGeometry(2.5, 3, 30, 30), materialCordon);
+        zapatoDer.position.set(3, -7, 0);
+        zapatoDer.rotation.x = Math.PI / 2;
+        personaje.add(zapatoDer);
+
+        personaje.position.set(0, 5.6, -3.5);
+        personaje.rotation.set(0, Math.PI, 0);
+        personaje.scale.set(0.12, 0.12, 0.12);
+
+        // --- REINDEER ---
+        function crearReno(esRudolph = false) {
+            var reno = new THREE.Group();
+            reno.name = esRudolph ? 'Rudolph' : 'Reno';
+
+            var mallaCuerpo = new THREE.Mesh(new THREE.SphereGeometry(1.0, 32, 32), materialCafeReno);
+            mallaCuerpo.position.y = 1;
+            mallaCuerpo.castShadow = true;
+            reno.add(mallaCuerpo);
+
+            var mallaCabeza = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 16), materialCafeReno);
+            mallaCabeza.position.set(1.4, 1.5, 0);
+            mallaCabeza.castShadow = true;
+            reno.add(mallaCabeza);
+
+            var materialNariz = esRudolph ? materialNarizReno : materialCafeReno;
+            var mallaNariz = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), materialNariz);
+            mallaNariz.name = 'nariz';
+            mallaNariz.position.set(1.9, 1.5, 0);
+            reno.add(mallaNariz);
+
+            const crearRamaCuerno = (length, radius, x, y, z, rotZ) => {
+                const m = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length, 8), materialCuernos);
+                m.position.set(x, y, z);
+                m.rotation.z = THREE.MathUtils.degToRad(rotZ);
+                return m;
+            };
+
+            reno.add(crearRamaCuerno(1.0, 0.1, 1.1, 2.0, 0.3, 45));
+            reno.add(crearRamaCuerno(0.5, 0.08, 1.5, 2.3, 0.3, 0));
+            reno.add(crearRamaCuerno(1.0, 0.1, 1.1, 2.0, -0.3, -45));
+            reno.add(crearRamaCuerno(0.5, 0.08, 1.5, 2.3, -0.3, 0));
+
+            var geometriaPierna = new THREE.CylinderGeometry(0.2, 0.2, 2.0, 16);
+            const y_pierna = 0.0;
+            const x_pierna = 0.5;
+            const z_pierna = 0.3;
+
+            reno.piernaDelIzq = new THREE.Mesh(geometriaPierna, materialCafeReno);
+            reno.piernaDelIzq.position.set(x_pierna, y_pierna, z_pierna);
+            reno.piernaDelIzq.castShadow = true;
+            reno.add(reno.piernaDelIzq);
+
+            reno.piernaDelDer = reno.piernaDelIzq.clone();
+            reno.piernaDelDer.position.z = -z_pierna;
+            reno.add(reno.piernaDelDer);
+
+            reno.piernaTraIzq = reno.piernaDelIzq.clone();
+            reno.piernaTraIzq.position.x = -x_pierna;
+            reno.add(reno.piernaTraIzq);
+
+            reno.piernaTraDer = reno.piernaDelDer.clone();
+            reno.piernaTraDer.position.x = -x_pierna;
+            reno.add(reno.piernaTraDer);
+
+            reno.rotation.y = THREE.MathUtils.degToRad(90);
+            return reno;
+        }
+
+        const separacion_x = 2.0;
+        const separacion_z = 10.0;
+
+        const reno1 = crearReno(true);
+        reno1.position.z = -30;
+        reno1.position.x = 0;
+        scene.add(reno1);
+
+        const reno2 = crearReno(false);
+        reno2.position.z = -20;
+        reno2.position.x = -separacion_x / 2;
+        scene.add(reno2);
+
+        const reno3 = crearReno(false);
+        reno3.position.z = -20;
+        reno3.position.x = separacion_x / 2;
+        scene.add(reno3);
+
+        const reno4 = crearReno(false);
+        reno4.position.z = -10;
+        reno4.position.x = -separacion_x / 2;
+        scene.add(reno4);
+
+        const reno5 = crearReno(false);
+        reno5.position.z = -10;
+        reno5.position.x = separacion_x / 2;
+        scene.add(reno5);
+
+        const unirCordon = (x1, z1, x2, z2, y) => {
+            const path = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(x1, y, z1),
+                new THREE.Vector3((x1 + x2) / 2, y + 0.3, (z1 + z2) / 2),
+                new THREE.Vector3(x2, y, z2)
+            ]);
+            const geom = new THREE.TubeGeometry(path, 64, 0.1, 8, false);
+            const malla = new THREE.Mesh(geom, materialCordon);
+            return malla;
+        };
+
+        const yCuerda = 1.5;
+        const z_body_offset = 0.8;
+
+        const zReno1Nariz = reno1.position.z - z_body_offset;
+        const zPareja1Centro = reno2.position.z + z_body_offset;
+
+        scene.add(unirCordon(reno1.position.x, zReno1Nariz, reno1.position.x, zPareja1Centro, yCuerda));
+        scene.add(unirCordon(reno2.position.x, zPareja1Centro, reno2.position.x, reno2.position.z + z_body_offset, yCuerda));
+        scene.add(unirCordon(reno3.position.x, zPareja1Centro, reno3.position.x, reno3.position.z + z_body_offset, yCuerda));
+
+        const zPareja2Centro = reno4.position.z + z_body_offset;
+        scene.add(unirCordon(reno2.position.x, reno2.position.z - z_body_offset, reno4.position.x, reno4.position.z + z_body_offset, yCuerda));
+        scene.add(unirCordon(reno3.position.x, reno3.position.z - z_body_offset, reno5.position.x, reno5.position.z + z_body_offset, yCuerda));
+
+        const zTrineoEnganche = -5;
+        scene.add(unirCordon(reno4.position.x, reno4.position.z - z_body_offset, reno4.position.x, zTrineoEnganche, yCuerda));
+        scene.add(unirCordon(reno5.position.x, reno5.position.z - z_body_offset, reno5.position.x, zTrineoEnganche, yCuerda));
+
+        var troteOffset = 0;
+        var velocidadTrote = 0.05;
+
+        function render(time) {
+            troteOffset += velocidadTrote;
+
+            const renos = [reno1, reno2, reno3, reno4, reno5];
+
+            renos.forEach((reno, index) => {
+                reno.position.y = Math.sin(troteOffset + (index) * 0.5) * 0.2;
+
+                if (reno.piernaDelIzq) {
+                    const offsetDel = Math.sin(troteOffset + index * 0.5) * 0.3;
+                    const offsetTra = Math.sin(troteOffset + index * 0.5 + Math.PI) * 0.3;
+
+                    reno.piernaDelIzq.rotation.x = offsetDel;
+                    reno.piernaDelDer.rotation.x = -offsetDel;
+
+                    reno.piernaTraIzq.rotation.x = offsetTra;
+                    reno.piernaTraDer.rotation.x = -offsetTra;
+                }
+            });
+
+            if (reno1.getObjectByName('Rudolph')) {
+                const nariz = reno1.getObjectByName('nariz');
+                if (nariz) {
+                    const worldPos = new THREE.Vector3();
+                    nariz.getWorldPosition(worldPos);
+                    luzRudolph.position.copy(worldPos);
+                    luzRudolph.target.position.set(worldPos.x, worldPos.y, worldPos.z - 10);
+                    luzRudolph.target.updateMatrixWorld();
+                }
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        }
+        requestAnimationFrame(render);
+    </script>
+</body>
+
+</html>
